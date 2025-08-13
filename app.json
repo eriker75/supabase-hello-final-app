@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "supabasehellofinalapp",
-    "slug": "supabasehellofinalapp",
+    "name": "helloappsupabase",
+    "slug": "helloappsupabase",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "supabasehellofinalapp",
+    "scheme": "helloappsupabase",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.eribert.helloappsupabase"
     },
     "web": {
       "bundler": "metro",

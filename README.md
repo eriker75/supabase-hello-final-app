@@ -2,6 +2,19 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## Project Documentation
+
+- All project documentation is located in the [`/docs`](./docs) folder.
+- Development history, architectural decisions, and task status are tracked in [`docs/devlog.md`](./docs/devlog.md).
+- For details on specific tasks, see the task files in `/docs`.
+
+## Backend Structure
+
+- Infrastructure datasources in `src/infraestructure/datasources/` are implemented as classes (e.g., `ChatDatasourceImpl`, `UserProfileDatasourceImpl`), with all data operations as class methods.
+- This structure improves maintainability and prepares for future decoupling between domain and infrastructure layers.
+- **ChatRepositoryImpl** in `src/infraestructure/repositories/` is now implemented as a set of exported [React Query](https://tanstack.com/query/latest) hooks, not a class. All chat data access is performed via hooks (see [`docs/2025-08-12-react-query-chat-repository.md`](./docs/2025-08-12-react-query-chat-repository.md) for details).
+- Other repositories (e.g., `UserProfileRepositoryImpl`, `UserLocationRepositoryImpl`) remain class-based and conform to their respective domain interfaces.
+
 ## Get started
 
 1. Install dependencies
