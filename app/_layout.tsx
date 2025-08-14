@@ -13,8 +13,8 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import { AppState, Platform, useColorScheme } from "react-native";
 import "react-native-reanimated";
-import { RealtimeChatController } from "../src/infraestructure/api/RealtimeChatController";
-import { RealtimeChatDatasourceImpl } from "../src/infraestructure/datasources/RealtimeChatDatasourceImpl";
+import { RealtimeChatGateway } from "../src/infraestructure/gateways/RealtimeChatGateway";
+import { RealtimeChatService } from "../src/infraestructure/services/RealtimeChatService";
 
 const queryClient = new QueryClient();
 SplashScreen.preventAutoHideAsync();
@@ -60,8 +60,8 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    const controller = new RealtimeChatController();
-    const datasource = new RealtimeChatDatasourceImpl(controller);
+    const controller = new RealtimeChatService();
+    const datasource = new RealtimeChatGateway(controller);
     const unsubscribe = datasource.startAllRealtimeListeners();
     return () => unsubscribe();
   }, []);
