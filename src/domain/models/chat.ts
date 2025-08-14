@@ -1,9 +1,8 @@
+import { Profile } from "./profile";
+
 export interface CreateChatRequest {
+  name: string;
   creator_id: string;
-  name?: string;
-  type: "group" | "private";
-  description?: string;
-  participants: string[];
 }
 
 export interface CreateChatResponse {
@@ -16,12 +15,13 @@ export interface ListChatsRequest {
   user_id?: string;
 }
 
-export interface ListChatsResponse {
-  chats: Chat[];
-  page: number;
-  perPage: number;
-  total: number;
-  hasMore: boolean;
+export interface Message {
+  id: string;
+  chat_id: string;
+  sender_id: string;
+  content: string;
+  created_at?: string;
+  type?: string;
 }
 
 export interface Chat {
@@ -34,18 +34,28 @@ export interface Chat {
   other_profile?: Profile;
 }
 
+export interface ListChatsResponse {
+  chats: Chat[];
+  page: number;
+  perPage: number;
+  total: number;
+  hasMore: boolean;
+}
+
 export interface GetChatRequest {
   id: string;
+  user_id?: string;
 }
+
 export interface GetChatResponse {
-  chat: any;
+  chat: Chat;
+  other_profile?: Profile;
 }
 
 export interface UpdateChatRequest {
   id: string;
   name?: string;
-  type?: string;
-  is_active?: string;
+  is_active?: boolean;
   description?: string;
 }
 
@@ -56,6 +66,7 @@ export interface UpdateChatResponse {
 export interface DeleteChatRequest {
   id: string;
 }
+
 export interface DeleteChatResponse {
   success: boolean;
 }
@@ -77,28 +88,15 @@ export interface ListMessagesResponse {
   other_profile?: Profile;
 }
 
-export interface Message {
-  id: string;
-  chat_id: string;
-  sender_id: string;
-  content: string;
-  created_at?: string;
-  type?: string;
-}
-
-export interface Profile {
-  id: string;
-  user_id: string;
-  alias: string;
-  avatar?: string;
-}
-
 export interface GetMessageRequest {
   chat_id: string;
   message_id: string;
+  user_id?: string;
 }
+
 export interface GetMessageResponse {
-  message: any;
+  message: Message;
+  other_profile?: Profile;
 }
 
 export interface PostMessageRequest {
@@ -126,6 +124,7 @@ export interface DeleteMessageRequest {
   chat_id: string;
   message_id: string;
 }
+
 export interface DeleteMessageResponse {
   success: boolean;
 }
@@ -137,4 +136,14 @@ export interface UnreadMessageCountRequest {
 
 export interface UnreadMessageCountResponse {
   unread_count: number;
+}
+
+export interface MarkAllMessagesReadRequest {
+  chat_id: string;
+  user_id: string;
+}
+
+export interface MarkAllMessagesReadResponse {
+  success: boolean;
+  updated_count: number;
 }

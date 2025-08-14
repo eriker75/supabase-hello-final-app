@@ -12,7 +12,7 @@ export interface UserProfile {
   latitude: number | null;
   longitude: number | null;
   address: string | null;
-  secondary_images: any | null;
+  secondary_images: string[] | null;
 }
 
 export interface UserPreferences {
@@ -40,7 +40,8 @@ export interface UserListResponse {
 }
 
 export interface CreateUserRequest {
-  user_id: string;
+  email: string;
+  password: string;
   alias?: string;
   gender?: number;
   avatar?: string;
@@ -52,7 +53,7 @@ export interface CreateUserRequest {
   latitude?: number;
   longitude?: number;
   address?: string;
-  secondary_images?: any;
+  secondary_images?: string[];
   min_age?: number;
   max_age?: number;
   max_distance?: number;
@@ -73,7 +74,7 @@ export interface UpdateUserRequest {
   latitude?: number;
   longitude?: number;
   address?: string;
-  secondary_images?: any;
+  secondary_images?: string[];
   min_age?: number;
   max_age?: number;
   max_distance?: number;
@@ -94,5 +95,6 @@ export interface ListUsersRequest {
 }
 
 export interface MeUserRequest {
-  user_id: string;
+  email: string;
+  password: string;
 }

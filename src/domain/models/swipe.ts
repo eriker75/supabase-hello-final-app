@@ -1,3 +1,12 @@
+export interface Swipe {
+  created_at: string;
+  swiper_user_id: string;
+  target_user_id: string;
+  is_liked: boolean;
+  is_match: boolean;
+  id: string;
+}
+
 export interface CreateSwipeRequest {
   user_id: string;
   target_user_id: string;
@@ -5,14 +14,7 @@ export interface CreateSwipeRequest {
 }
 
 export interface CreateSwipeResponse {
-  swipe: {
-    created_at: string,
-    swiper_user_id: string,
-    target_user_id: string,
-    is_liked: boolean,
-    is_match: boolean,
-    id: string
-  }
+  swipe: Swipe;
 }
 
 export interface ListSwipesRequest {
@@ -22,5 +24,5 @@ export interface ListSwipesRequest {
 }
 
 export interface ListSwipesResponse {
-  swipes: any[];
+  swipes: Swipe[];
 }

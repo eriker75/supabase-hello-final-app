@@ -2,21 +2,26 @@ export interface Profile {
   id: string;
   user_id: string;
   alias: string | null;
-  gender: number | null;
-  avatar: string | null;
   biography: string | null;
   birth_date: string | null;
+  gender: number | null;
+  avatar: string | null;
+  address: string | null;
+  last_online: string | null;
   is_onboarded: boolean | null;
   is_verified: boolean | null;
-  is_active: boolean | null;
   latitude: number | null;
   longitude: number | null;
-  address: string | null;
-  secondary_images: any | null;
+  is_online: boolean | null;
+  is_active: boolean | null;
+  location: string | null;
+  secondary_images: string[] | null;
 }
 
 export interface ProfilePreferences {
   id?: string;
+  created_at?: string;
+  updated_at?: string;
   user_id: string;
   min_age: number;
   max_age: number;
@@ -39,6 +44,24 @@ export interface ProfileListResponse {
   };
 }
 
+export interface SwipeableProfile {
+  user_id: string;
+  profile: Profile;
+  preferences: ProfilePreferences | null;
+  distance_km: number;
+  age: number;
+  gender: number | null;
+  avatar_url: string | null;
+  biography: string | null;
+  username: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export interface SwipeableProfilesResponse {
+  profiles: SwipeableProfile[];
+}
+
 export interface CreateProfileRequest {
   user_id: string;
   alias?: string;
@@ -52,7 +75,7 @@ export interface CreateProfileRequest {
   latitude?: number;
   longitude?: number;
   address?: string;
-  secondary_images?: any;
+  secondary_images?: string[];
   min_age?: number;
   max_age?: number;
   max_distance?: number;
@@ -73,7 +96,7 @@ export interface UpdateProfileRequest {
   latitude?: number;
   longitude?: number;
   address?: string;
-  secondary_images?: any;
+  secondary_images?: string[];
   min_age?: number;
   max_age?: number;
   max_distance?: number;

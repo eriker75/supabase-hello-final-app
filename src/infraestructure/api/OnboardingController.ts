@@ -3,6 +3,7 @@ import {
   OnboardUserRequest,
   OnboardUserResponse,
 } from "../../domain/models/onboarding";
+import { Profile, ProfilePreferences } from "../../domain/models/profile";
 
 /**
  * OnboardingController: Implements onboarding-related data operations as class methods.
@@ -13,7 +14,8 @@ export class OnboardingController {
    */
   async onboardUser(req: OnboardUserRequest): Promise<OnboardUserResponse> {
     const {
-      user_id,
+      email,
+      password,
       alias,
       gender,
       avatar,
@@ -32,9 +34,12 @@ export class OnboardingController {
       genders = [1, 2, 3],
     } = req;
 
-    if (!user_id || !alias || gender === undefined) {
-      throw new Error("--user_id, --alias, and --gender are required");
+    if (!email || !password || !alias || gender === undefined) {
+      throw new Error("--email, --password, --alias, and --gender are required");
     }
+
+    // Simulate user creation/authentication and get user_id
+    const user_id = "mocked-user-id"; // Replace with actual user creation/auth logic
 
     // Check if profile already exists
     const { data: existingProfiles, error: checkError } = await supabase
@@ -53,47 +58,24 @@ export class OnboardingController {
         profileRow.is_onboarded === null ||
         profileRow.is_onboarded === false
       ) {
-        // Actualizar perfil
-        let updateProfileError;
-        if (latitude !== undefined && longitude !== undefined) {
-          const { error } = await supabase
-            .from("profiles")
-            .update({
-              alias,
-              gender,
-              avatar: avatar || null,
-              biography: biography || null,
-              birth_date: birth_date || null,
-              is_onboarded: true,
-              is_verified,
-              is_active,
-              latitude: latitude ?? null,
-              longitude: longitude ?? null,
-              address: address || null,
-              secondary_images: secondary_images || null,
-            })
-            .eq("id", profileRow.id);
-          updateProfileError = error;
-        } else {
-          const { error } = await supabase
-            .from("profiles")
-            .update({
-              alias,
-              gender,
-              avatar: avatar || null,
-              biography: biography || null,
-              birth_date: birth_date || null,
-              is_onboarded: true,
-              is_verified,
-              is_active,
-              latitude: latitude ?? null,
-              longitude: longitude ?? null,
-              address: address || null,
-              secondary_images: secondary_images || null,
-            })
-            .eq("id", profileRow.id);
-          updateProfileError = error;
-        }
+        // Update profile
+        const { error: updateProfileError } = await supabase
+          .from("profiles")
+          .update({
+            alias,
+            gender,
+            avatar: avatar || null,
+            biography: biography || null,
+            birth_date: birth_date || null,
+            is_onboarded: true,
+            is_verified,
+            is_active,
+            latitude: latitude ?? null,
+            longitude: longitude ?? null,
+            address: address || null,
+            secondary_images: secondary_images || null,
+          })
+          .eq("id", profileRow.id);
 
         if (updateProfileError) {
           throw new Error(
@@ -101,7 +83,7 @@ export class OnboardingController {
           );
         }
 
-        // Actualizar preferencias (si existen, update; si no, insert)
+        // Update or insert preferences
         const { data: existingPrefs, error: checkPrefsError } = await supabase
           .from("preferences")
           .select("id")
@@ -113,7 +95,7 @@ export class OnboardingController {
           );
         }
 
-        const preferencesFields = {
+        const preferencesFields: ProfilePreferences = {
           user_id,
           min_age,
           max_age,
@@ -144,7 +126,7 @@ export class OnboardingController {
           }
         }
 
-        // Obtener perfil actualizado
+        // Get updated profile
         const { data: updatedProfile, error: getProfileError } = await supabase
           .from("profiles")
           .select("*")
@@ -157,7 +139,7 @@ export class OnboardingController {
           );
         }
 
-        // Obtener preferencias actualizadas
+        // Get updated preferences
         const { data: updatedPrefs, error: getPrefsError } = await supabase
           .from("preferences")
           .select("*")
@@ -172,8 +154,8 @@ export class OnboardingController {
 
         return {
           user_id,
-          profile: updatedProfile[0],
-          preferences: updatedPrefs[0],
+          profile: updatedProfile[0] as Profile,
+          preferences: updatedPrefs[0] as ProfilePreferences,
         };
       } else {
         throw new Error(
@@ -183,7 +165,8 @@ export class OnboardingController {
     }
 
     // 1. Create profile
-    const profileFields = {
+    const profileFields: Profile = {
+      id: "mocked-id", // Replace with actual id from DB
       user_id,
       alias,
       gender,
@@ -196,6 +179,9 @@ export class OnboardingController {
       latitude: latitude ?? null,
       longitude: longitude ?? null,
       address: address || null,
+      last_online: null,
+      is_online: null,
+      location: null,
       secondary_images: secondary_images || null,
     };
 
@@ -210,10 +196,10 @@ export class OnboardingController {
       );
     }
 
-    const profile = insertedProfiles[0];
+    const profile = insertedProfiles[0] as Profile;
 
     // 2. Create preferences
-    const preferencesFields = {
+    const preferencesFields: ProfilePreferences = {
       user_id: profile.user_id,
       min_age,
       max_age,

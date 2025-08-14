@@ -1,7 +1,8 @@
-// Onboarding module request/response interfaces
+import { Profile } from "./profile";
 
 export interface OnboardUserRequest {
-  user_id: string;
+  email: string;
+  password: string;
   alias: string;
   gender: number;
   avatar?: string;
@@ -13,15 +14,24 @@ export interface OnboardUserRequest {
   latitude?: number;
   longitude?: number;
   address?: string;
-  secondary_images?: string;
+  secondary_images?: string[];
   min_age?: number;
   max_age?: number;
   max_distance?: number;
   genders?: number[];
 }
 
+export interface ProfilePreferences {
+  id?: string;
+  user_id: string;
+  min_age: number;
+  max_age: number;
+  max_distance: number;
+  genders: number[] | string;
+}
+
 export interface OnboardUserResponse {
   user_id: string;
-  profile: any;
-  preferences: any;
+  profile: Profile;
+  preferences: ProfilePreferences;
 }

@@ -1,4 +1,6 @@
 import { supabase } from "@/src/utils/supabase";
+import { Match } from "../../domain/models/match";
+import { Profile, SwipeableProfile } from "../../domain/models/profile";
 
 export class UserLocationController {
   /**
@@ -7,7 +9,7 @@ export class UserLocationController {
   async listNearbyProfiles(req: {
     user_id: string;
     maxDistance?: number;
-  }): Promise<any> {
+  }): Promise<{ profiles: Profile[] }> {
     const { user_id, maxDistance = 50.0 } = req;
 
     if (!user_id) {
@@ -24,7 +26,7 @@ export class UserLocationController {
       throw new Error("Error fetching nearby profiles: " + error.message);
     }
 
-    return { profiles: data };
+    return { profiles: (data || []) as Profile[] };
   }
 
   /**
@@ -34,7 +36,7 @@ export class UserLocationController {
     user_id: string;
     maxDistance?: number;
     count?: number;
-  }): Promise<any> {
+  }): Promise<{ profiles: SwipeableProfile[] }> {
     const { user_id, maxDistance = 50.0, count = 10 } = req;
 
     if (!user_id) {
@@ -52,7 +54,7 @@ export class UserLocationController {
       throw new Error("Error fetching swipeable profiles: " + error.message);
     }
 
-    return { profiles: data };
+    return { profiles: (data || []) as SwipeableProfile[] };
   }
 
   /**
@@ -61,7 +63,7 @@ export class UserLocationController {
   async listNearbyMatches(req: {
     user_id: string;
     maxDistance?: number;
-  }): Promise<any> {
+  }): Promise<{ matches: Match[] }> {
     const { user_id, maxDistance = 200.0 } = req;
 
     if (!user_id) {
@@ -78,19 +80,20 @@ export class UserLocationController {
       throw new Error("Error fetching nearby matches: " + error.message);
     }
 
-    return { matches: data };
+    return { matches: (data || []) as Match[] };
   }
+
   /**
    * Find a user location by userId.
    */
-  async findByUserId(userId: string): Promise<any | null> {
+  async findByUserId(userId: string): Promise<{ user_id: string; latitude: number; longitude: number } | null> {
     const { data, error } = await supabase
       .from("user_locations")
       .select("*")
       .eq("user_id", userId)
       .limit(1);
     if (error || !data || data.length === 0) return null;
-    return data[0];
+    return data[0] as { user_id: string; latitude: number; longitude: number };
   }
 
   /**
@@ -100,7 +103,7 @@ export class UserLocationController {
     userId: string,
     latitude: number,
     longitude: number
-  ): Promise<any> {
+  ): Promise<{ user_id: string; latitude: number; longitude: number }> {
     const { data, error } = await supabase
       .from("user_locations")
       .upsert([{ user_id: userId, latitude, longitude }], {
@@ -111,7 +114,7 @@ export class UserLocationController {
       throw new Error(
         "Error updating location: " + (error?.message || "Unknown error")
       );
-    return data[0];
+    return data[0] as { user_id: string; latitude: number; longitude: number };
   }
 
   /**

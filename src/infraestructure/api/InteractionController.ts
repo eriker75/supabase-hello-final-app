@@ -2,12 +2,14 @@ import { supabase } from "@/src/utils/supabase";
 import {
   ListMatchesRequest,
   ListMatchesResponse,
+  Match,
 } from "../../domain/models/match";
 import {
   CreateSwipeRequest,
   CreateSwipeResponse,
   ListSwipesRequest,
   ListSwipesResponse,
+  Swipe,
 } from "../../domain/models/swipe";
 
 /**
@@ -34,7 +36,9 @@ export class InteractionController {
       throw new Error("❌ Error fetching matches: " + error.message);
     }
 
-    return { matches: data };
+    // Enrich and type the matches
+    const matches: Match[] = (data || []) as Match[];
+    return { matches };
   }
 
   /**
@@ -68,7 +72,7 @@ export class InteractionController {
       );
     }
 
-    return { swipe: data[0] };
+    return { swipe: data[0] as Swipe };
   }
 
   /**
@@ -102,6 +106,6 @@ export class InteractionController {
       throw new Error("❌ Error listing swipes: " + error.message);
     }
 
-    return { swipes: data };
+    return { swipes: (data || []) as Swipe[] };
   }
 }
