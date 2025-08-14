@@ -14,5 +14,5 @@ export function toDomainUserLocation(
     longitude: profile.longitude ?? 0,
     updatedAt: updatedAt ? new Date(updatedAt) : new Date(),
   };
-  return new UserLocationEntity(props);
+  return { ...props };
 }

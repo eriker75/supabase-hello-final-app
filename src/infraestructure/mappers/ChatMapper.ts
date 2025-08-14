@@ -26,7 +26,7 @@ export function toDomainChat(infraChat: InfraChat): ChatEntity {
       ? new Date(infraChat.created_at)
       : new Date(),
   };
-  return new ChatEntity(props);
+  return { ...props };
 }
 
 // Maps domain ChatEntity to infrastructure Chat model (for requests)

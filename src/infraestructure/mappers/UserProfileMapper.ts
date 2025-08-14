@@ -54,7 +54,7 @@ export function toDomainUserProfile(
       : undefined,
   };
 
-  return new UserProfileEntity(params);
+  return { ...params };
 }
 
 // Maps a list of ProfileResponse to domain UserProfileEntity[]

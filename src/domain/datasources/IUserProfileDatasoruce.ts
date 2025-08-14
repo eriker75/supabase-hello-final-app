@@ -3,31 +3,34 @@ import { UserProfileEntity } from "../entities/UserProfile.entity";
 /**
  * UserProfile Datasource contract for domain/application use.
  */
-export interface IUserProfileDatasource {
+/**
+ * IUserProfileDatasource ahora es una clase abstracta.
+ */
+export abstract class IUserProfileDatasource {
   // CRUD
-  findById(id: string): Promise<UserProfileEntity | null>;
-  findAll(): Promise<UserProfileEntity[]>;
-  save(entity: UserProfileEntity): Promise<void>;
-  update(entity: UserProfileEntity): Promise<void>;
-  delete(id: string): Promise<void>;
+  abstract findById(id: string): Promise<UserProfileEntity | null>;
+  abstract findAll(): Promise<UserProfileEntity[]>;
+  abstract save(entity: UserProfileEntity): Promise<void>;
+  abstract update(entity: UserProfileEntity): Promise<void>;
+  abstract delete(id: string): Promise<void>;
   // Finders
-  findByUserId(userId: string): Promise<UserProfileEntity | null>;
-  findByEmail(email: string): Promise<UserProfileEntity | null>;
-  findByAlias(alias: string): Promise<UserProfileEntity | null>;
+  abstract findByUserId(userId: string): Promise<UserProfileEntity | null>;
+  abstract findByEmail(email: string): Promise<UserProfileEntity | null>;
+  abstract findByAlias(alias: string): Promise<UserProfileEntity | null>;
   // Preferences
-  getPreferences(userId: string): Promise<any>;
-  setPreferences(userId: string, preferences: any): Promise<void>;
+  abstract getPreferences(userId: string): Promise<any>;
+  abstract setPreferences(userId: string, preferences: any): Promise<void>;
   // Location
-  updateLocation(userId: string, latitude: number, longitude: number): Promise<void>;
+  abstract updateLocation(userId: string, latitude: number, longitude: number): Promise<void>;
   // Geo queries
-  listNearbyProfiles(userId: string, maxDistance: number): Promise<UserProfileEntity[]>;
-  listNearbySwipeableProfiles(userId: string, maxDistance: number, limit: number): Promise<UserProfileEntity[]>;
+  abstract listNearbyProfiles(userId: string, maxDistance: number): Promise<UserProfileEntity[]>;
+  abstract listNearbySwipeableProfiles(userId: string, maxDistance: number, limit: number): Promise<UserProfileEntity[]>;
   // Onboarding
-  onboardUser(userId: string, data: Partial<UserProfileEntity>): Promise<UserProfileEntity>;
+  abstract onboardUser(userId: string, data: Partial<UserProfileEntity>): Promise<UserProfileEntity>;
   // Block/report
-  blockUser(blockerId: string, blockedId: string): Promise<void>;
-  reportUser(reporterId: string, reportedId: string, reason: string, details?: string): Promise<void>;
+  abstract blockUser(blockerId: string, blockedId: string): Promise<void>;
+  abstract reportUser(reporterId: string, reportedId: string, reason: string, details?: string): Promise<void>;
   // Online status
-  setOnline(userId: string): Promise<void>;
-  setOffline(userId: string): Promise<void>;
+  abstract setOnline(userId: string): Promise<void>;
+  abstract setOffline(userId: string): Promise<void>;
 }

@@ -13,5 +13,5 @@ export function toDomainOnboarding(
     profile: response.profile, // Replace with toDomainUserProfile if available
     preferences: response.preferences, // Replace with toDomainPreferences if available
   };
-  return new OnboardingEntity(params);
+  return { ...params };
 }

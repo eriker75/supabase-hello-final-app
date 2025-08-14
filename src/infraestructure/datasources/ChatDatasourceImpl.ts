@@ -119,14 +119,13 @@ export class ChatDatasourceImpl implements IChatDatasoruce {
   async getParticipants(chatId: string): Promise<ParticipantEntity[]> {
     const data = await this.controller.getParticipants(chatId);
     return (data || []).map(
-      (row: any) =>
-        new ParticipantEntity({
-          id: row.id ?? `${row.chat_id}_${row.user_id}`,
-          userId: row.user_id,
-          chatId: row.chat_id,
-          role: row.role,
-          joinedAt: row.joined_at ? new Date(row.joined_at) : new Date(),
-        })
+      (row: any) => ({
+        id: row.id ?? `${row.chat_id}_${row.user_id}`,
+        userId: row.user_id,
+        chatId: row.chat_id,
+        role: row.role,
+        joinedAt: row.joined_at ? new Date(row.joined_at) : new Date(),
+      })
     );
   }
 

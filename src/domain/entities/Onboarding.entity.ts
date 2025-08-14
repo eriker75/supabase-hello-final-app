@@ -4,14 +4,11 @@ export interface OnboardingEntityParams {
   preferences: any; // Replace 'any' with PreferencesEntity if available
 }
 
-export class OnboardingEntity {
+/**
+ * OnboardingEntity ahora es una interface simple, sin lógica interna.
+ */
+export interface OnboardingEntity {
   userId: string;
   profile: any;
   preferences: any;
-
-  constructor(params: OnboardingEntityParams) {
-    this.userId = params.userId;
-    this.profile = params.profile;
-    this.preferences = params.preferences;
-  }
 }

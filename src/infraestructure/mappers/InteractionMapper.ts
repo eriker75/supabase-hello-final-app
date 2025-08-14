@@ -16,7 +16,7 @@ export function toDomainInteraction(
     isMatch: infra.is_match,
     createdAt: infra.created_at ?? "",
   };
-  return new InteractionEntity(params);
+  return { ...params };
 }
 
 // Maps a list of infrastructure interactions to domain entities

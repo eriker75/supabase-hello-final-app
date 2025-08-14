@@ -5,31 +5,34 @@ import { ParticipantEntity } from "../entities/Participant.entity";
 /**
  * Chat Datasoruce contract for domain/application use.
  */
-export interface IChatDatasoruce {
+/**
+ * IChatDatasoruce ahora es una clase abstracta.
+ */
+export abstract class IChatDatasoruce {
   // CRUD
-  findById(id: string): Promise<ChatEntity | null>;
-  findAll(): Promise<ChatEntity[]>;
-  save(entity: ChatEntity): Promise<void>;
-  update(entity: ChatEntity): Promise<void>;
-  delete(id: string): Promise<void>;
+  abstract findById(id: string): Promise<ChatEntity | null>;
+  abstract findAll(): Promise<ChatEntity[]>;
+  abstract save(entity: ChatEntity): Promise<void>;
+  abstract update(entity: ChatEntity): Promise<void>;
+  abstract delete(id: string): Promise<void>;
   // Finders
-  findByParticipant(userId: string): Promise<ChatEntity[]>;
-  findByType(type: string): Promise<ChatEntity[]>;
-  findActiveChats(userId: string): Promise<ChatEntity[]>;
-  findArchivedChats(userId: string): Promise<ChatEntity[]>;
-  findMutedChats(userId: string): Promise<ChatEntity[]>;
-  findChatsWithUnreadMessages(userId: string): Promise<ChatEntity[]>;
+  abstract findByParticipant(userId: string): Promise<ChatEntity[]>;
+  abstract findByType(type: string): Promise<ChatEntity[]>;
+  abstract findActiveChats(userId: string): Promise<ChatEntity[]>;
+  abstract findArchivedChats(userId: string): Promise<ChatEntity[]>;
+  abstract findMutedChats(userId: string): Promise<ChatEntity[]>;
+  abstract findChatsWithUnreadMessages(userId: string): Promise<ChatEntity[]>;
   // Participants
-  createWithParticipants(chat: ChatEntity, participants: ParticipantEntity[]): Promise<ChatEntity>;
-  addParticipant(chatId: string, participant: ParticipantEntity): Promise<void>;
-  removeParticipant(chatId: string, userId: string): Promise<void>;
-  getParticipants(chatId: string): Promise<ParticipantEntity[]>;
+  abstract createWithParticipants(chat: ChatEntity, participants: ParticipantEntity[]): Promise<ChatEntity>;
+  abstract addParticipant(chatId: string, participant: ParticipantEntity): Promise<void>;
+  abstract removeParticipant(chatId: string, userId: string): Promise<void>;
+  abstract getParticipants(chatId: string): Promise<ParticipantEntity[]>;
   // Messages
-  getMessages(chatId: string): Promise<ChatMessageEntity[]>;
-  sendMessage(chatId: string, message: ChatMessageEntity): Promise<ChatMessageEntity>;
-  markMessageAsRead(chatId: string, messageId: string, userId: string): Promise<void>;
+  abstract getMessages(chatId: string): Promise<ChatMessageEntity[]>;
+  abstract sendMessage(chatId: string, message: ChatMessageEntity): Promise<ChatMessageEntity>;
+  abstract markMessageAsRead(chatId: string, messageId: string, userId: string): Promise<void>;
   // Chat activity
-  archiveChat(chatId: string): Promise<void>;
-  muteChat(chatId: string, userId: string): Promise<void>;
-  unmuteChat(chatId: string, userId: string): Promise<void>;
+  abstract archiveChat(chatId: string): Promise<void>;
+  abstract muteChat(chatId: string, userId: string): Promise<void>;
+  abstract unmuteChat(chatId: string, userId: string): Promise<void>;
 }

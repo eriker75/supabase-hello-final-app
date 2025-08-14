@@ -16,7 +16,9 @@ import {
 } from "../../domain/models/swipe";
 
 /**
- * InteractionDatasourceImpl: Implements interaction-related data operations as class methods, delegating to InteractionController and using mappers.
+ * InteractionDatasourceImpl: Implements interaction-related
+ * data operations as class methods, delegating to
+ * InteractionController and using mappers.
  */
 export class InteractionDatasourceImpl {
   private controller: InteractionController;

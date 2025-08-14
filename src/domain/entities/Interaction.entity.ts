@@ -7,20 +7,14 @@ export interface InteractionEntityParams {
   createdAt: string;
 }
 
-export class InteractionEntity {
+/**
+ * InteractionEntity ahora es una interface simple, sin lógica interna.
+ */
+export interface InteractionEntity {
   id: string;
   swiperUserId: string;
   targetUserId: string;
   isLiked: boolean;
   isMatch: boolean;
   createdAt: string;
-
-  constructor(params: InteractionEntityParams) {
-    this.id = params.id;
-    this.swiperUserId = params.swiperUserId;
-    this.targetUserId = params.targetUserId;
-    this.isLiked = params.isLiked;
-    this.isMatch = params.isMatch;
-    this.createdAt = params.createdAt;
-  }
 }

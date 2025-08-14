@@ -18,7 +18,7 @@ export function toDomainChatMessage(infraMsg: Message): ChatMessageEntity {
       ? new Date((infraMsg as any).updated_at)
       : new Date(),
   };
-  return new ChatMessageEntity(params);
+  return { ...params };
 }
 
 // Maps a list of infrastructure messages to domain entities
