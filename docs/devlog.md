@@ -29,3 +29,13 @@ Ver detalles y checklist en [`2025-08-14-migracion-entidades-a-interfaces.md`](.
 - Se corrigieron los tipos y propiedades para ajustarse a las entidades de dominio.
 - El servicio mantiene la sincronización y rollback de los stores ante errores en las operaciones.
 - Documentado el plan y detalles en [`2025-08-14-chat-service-optimistic-sync.md`](./2025-08-14-chat-service-optimistic-sync.md).
+
+## 2025-08-14 - Datasource Abstract Class Refactor
+
+- Ensured all datasource implementations extend or implement their corresponding abstract class/interface in the domain layer.
+- Created missing abstract classes for Interaction and Onboarding datasources.
+- Refactored `UserProfileDatasourceImpl` to fully implement `AbstractUserProfileDatasource`, fixing method signatures and type mappings, and cleaning up previous corruption.
+- Confirmed `UserLocationDatasourceImpl` fully implements its abstract class.
+- Improved consistency and maintainability of the codebase for future development.
+
+See [`2025-08-14-refactor-datasource-abstract-classes.md`](2025-08-14-refactor-datasource-abstract-classes.md) for full details.

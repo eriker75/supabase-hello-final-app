@@ -3,12 +3,9 @@ import { ChatMessageEntity } from "../entities/ChatMessage.entity";
 import { ParticipantEntity } from "../entities/Participant.entity";
 
 /**
- * Chat Datasoruce contract for domain/application use.
+ * AbastractChatDatasoruce ahora es una clase abstracta.
  */
-/**
- * IChatDatasoruce ahora es una clase abstracta.
- */
-export abstract class IChatDatasoruce {
+export abstract class AbastractChatDatasoruce {
   // CRUD
   abstract findById(id: string): Promise<ChatEntity | null>;
   abstract findAll(): Promise<ChatEntity[]>;

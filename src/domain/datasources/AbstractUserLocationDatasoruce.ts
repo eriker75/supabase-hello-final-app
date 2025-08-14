@@ -1,12 +1,9 @@
 import { UserLocationEntity } from "../entities/UserLocation.entity";
 
 /**
- * UserLocation Datasource contract for domain/application use.
+ * AbstractUserLocationDatasource ahora es una clase abstracta.
  */
-/**
- * IUserLocationDatasource ahora es una clase abstracta.
- */
-export abstract class IUserLocationDatasource {
+export abstract class AbstractUserLocationDatasource {
   abstract findByUserId(userId: string): Promise<UserLocationEntity | null>;
   abstract updateLocation(userId: string, latitude: number, longitude: number): Promise<UserLocationEntity>;
   abstract listNearbyUsers(userId: string, maxDistance: number): Promise<UserLocationEntity[]>;

@@ -1,5 +1,6 @@
 import { OnboardingController } from "@/src/infraestructure/api/OnboardingController";
 import { toDomainOnboarding } from "@/src/infraestructure/mappers/OnboardingMapper";
+import { AbstractOnboardingDatasource } from "../../domain/datasources/AbstractOnboardingDatasource";
 import { OnboardingEntity } from "../../domain/entities/Onboarding.entity";
 import {
   OnboardUserRequest,
@@ -11,7 +12,7 @@ import {
  * data operations as class methods, delegating to
  * OnboardingController and using mappers.
  */
-export class OnboardingDatasourceImpl {
+export class OnboardingDatasourceImpl implements AbstractOnboardingDatasource {
   private controller: OnboardingController;
 
   constructor() {

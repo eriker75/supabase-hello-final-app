@@ -1,12 +1,9 @@
 import { UserProfileEntity } from "../entities/UserProfile.entity";
 
 /**
- * UserProfile Datasource contract for domain/application use.
+ * AbstractUserProfileDatasource ahora es una clase abstracta.
  */
-/**
- * IUserProfileDatasource ahora es una clase abstracta.
- */
-export abstract class IUserProfileDatasource {
+export abstract class AbstractUserProfileDatasource {
   // CRUD
   abstract findById(id: string): Promise<UserProfileEntity | null>;
   abstract findAll(): Promise<UserProfileEntity[]>;

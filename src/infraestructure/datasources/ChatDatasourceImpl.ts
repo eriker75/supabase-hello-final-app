@@ -1,4 +1,4 @@
-import { IChatDatasoruce } from "@/src/domain/datasources/IChatDatasoruce";
+import { AbastractChatDatasoruce } from "@/src/domain/datasources/AbastractChatDatasoruce";
 import { ChatEntity } from "@/src/domain/entities/Chat.entity";
 import { ChatMessageEntity } from "@/src/domain/entities/ChatMessage.entity";
 import {
@@ -14,7 +14,7 @@ import {
 import { ParticipantEntity } from "../../domain/entities/Participant.entity";
 import { ChatController } from "../api/ChatController";
 
-export class ChatDatasourceImpl implements IChatDatasoruce {
+export class ChatDatasourceImpl implements AbastractChatDatasoruce {
   private controller: ChatController;
 
   constructor() {
@@ -95,7 +95,10 @@ export class ChatDatasourceImpl implements IChatDatasoruce {
       userId: p.userId,
       role: p.role,
     }));
-    const chatRes = await this.controller.createWithParticipants(chatReq, participantObjs);
+    const chatRes = await this.controller.createWithParticipants(
+      chatReq,
+      participantObjs
+    );
     const res = await this.controller.getChat({ id: chatRes.chat_id });
     if (!res || !res.chat)
       throw new Error("Failed to create chat with participants");
@@ -118,15 +121,13 @@ export class ChatDatasourceImpl implements IChatDatasoruce {
 
   async getParticipants(chatId: string): Promise<ParticipantEntity[]> {
     const data = await this.controller.getParticipants(chatId);
-    return (data || []).map(
-      (row: any) => ({
-        id: row.id ?? `${row.chat_id}_${row.user_id}`,
-        userId: row.user_id,
-        chatId: row.chat_id,
-        role: row.role,
-        joinedAt: row.joined_at ? new Date(row.joined_at) : new Date(),
-      })
-    );
+    return (data || []).map((row: any) => ({
+      id: row.id ?? `${row.chat_id}_${row.user_id}`,
+      userId: row.user_id,
+      chatId: row.chat_id,
+      role: row.role,
+      joinedAt: row.joined_at ? new Date(row.joined_at) : new Date(),
+    }));
   }
 
   async getMessages(chatId: string): Promise<ChatMessageEntity[]> {

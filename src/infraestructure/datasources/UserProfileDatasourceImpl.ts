@@ -4,6 +4,7 @@ import {
   toDomainUserProfile,
   toDomainUserProfileList,
 } from "@/src/infraestructure/mappers/UserProfileMapper";
+import { AbstractUserProfileDatasource } from "../../domain/datasources/AbstractUserProfileDatasoruce";
 import {
   CreateProfileRequest,
   DeleteProfileRequest,
@@ -26,13 +27,14 @@ import {
  * UserProfileDatasourceImpl: Implements user and profile data operations
  * as class methods, delegating to UserProfileController and using mappers.
  */
-export class UserProfileDatasourceImpl {
+export class UserProfileDatasourceImpl implements AbstractUserProfileDatasource {
   private controller: UserProfileController;
 
   constructor() {
     this.controller = new UserProfileController();
   }
 
+  // Existing CRUD and finder methods
   async createUser(req: CreateUserRequest): Promise<UserProfileEntity> {
     const res: UserResponse = await this.controller.createUser(req);
     const profile = {
@@ -195,37 +197,7 @@ export class UserProfileDatasourceImpl {
     await this.controller.deleteProfile(req);
   }
 
-  // The following methods return raw data or void, so no mapping is needed
-  listNearbyProfiles(req: {
-    user_id: string;
-    maxDistance?: number;
-  }): Promise<any> {
-    return this.controller.listNearbyProfiles(req);
-  }
-
-  listNearbySwipeableProfiles(req: {
-    user_id: string;
-    maxDistance?: number;
-    count?: number;
-  }): Promise<any> {
-    return this.controller.listNearbySwipeableProfiles(req);
-  }
-
-  listNearbyMatches(req: {
-    user_id: string;
-    maxDistance?: number;
-  }): Promise<any> {
-    return this.controller.listNearbyMatches(req);
-  }
-
-  findByEmail(email: string): Promise<any | null> {
-    return this.controller.findByEmail(email);
-  }
-
-  findByAlias(alias: string): Promise<any | null> {
-    return this.controller.findByAlias(alias);
-  }
-
+  // Preferences and location
   getPreferences(userId: string): Promise<any | null> {
     return this.controller.getPreferences(userId);
   }
@@ -242,6 +214,7 @@ export class UserProfileDatasourceImpl {
     return this.controller.updateLocation(userId, latitude, longitude);
   }
 
+  // Block/report/online
   blockUser(blockerId: string, blockedId: string): Promise<void> {
     return this.controller.blockUser(blockerId, blockedId);
   }
@@ -261,5 +234,129 @@ export class UserProfileDatasourceImpl {
 
   setOffline(userId: string): Promise<void> {
     return this.controller.setOffline(userId);
+  }
+
+  // AbstractUserProfileDatasource required methods (aliases/adapters)
+  async findById(id: string): Promise<UserProfileEntity | null> {
+    return this.getUser({ id });
+  }
+
+  async findAll(): Promise<UserProfileEntity[]> {
+    // Provide default pagination for demo; adjust as needed
+    return this.listUsers({ limit: 100, offset: 0 });
+  }
+
+  async save(entity: UserProfileEntity): Promise<void> {
+    // Map UserProfileEntity to CreateUserRequest as needed
+    await this.createUser({
+      email: entity.email,
+      password: "changeme", // Placeholder for required field
+      alias: entity.alias,
+      gender: entity.gender,
+      avatar: entity.avatar,
+      biography: entity.biography,
+      birth_date: entity.birthDate ? entity.birthDate.toISOString() : undefined,
+      is_onboarded: entity.isOnboarded,
+      is_verified: entity.isVerified,
+      is_active: entity.isActive,
+      latitude: entity.latitude,
+      longitude: entity.longitude,
+      address: entity.address,
+      secondary_images: entity.secondaryImages,
+      // Add more fields as needed
+    });
+  }
+
+  async update(entity: UserProfileEntity): Promise<void> {
+    await this.updateUser({
+      id: entity.id,
+      alias: entity.alias,
+      gender: entity.gender,
+      avatar: entity.avatar,
+      biography: entity.biography,
+      birth_date: entity.birthDate ? entity.birthDate.toISOString() : undefined,
+      is_onboarded: entity.isOnboarded,
+      is_verified: entity.isVerified,
+      is_active: entity.isActive,
+      latitude: entity.latitude,
+      longitude: entity.longitude,
+      address: entity.address,
+      secondary_images: entity.secondaryImages,
+      // Add more fields as needed
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.deleteUser({ id });
+  }
+
+  async findByUserId(userId: string): Promise<UserProfileEntity | null> {
+    return this.getUser({ id: userId });
+  }
+
+  async findByEmail(email: string): Promise<UserProfileEntity | null> {
+    const res = await this.controller.findByEmail(email);
+    if (!res) return null;
+    // Wrap as ProfileResponse for toDomainUserProfile
+    return toDomainUserProfile({
+      id: res.id || res.user_id,
+      profile: res,
+      preferences: null,
+    });
+  }
+
+  async findByAlias(alias: string): Promise<UserProfileEntity | null> {
+    const res = await this.controller.findByAlias(alias);
+    if (!res) return null;
+    return toDomainUserProfile({
+      id: res.id || res.user_id,
+      profile: res,
+      preferences: null,
+    });
+  }
+
+  async listNearbyProfiles(
+    userId: string,
+    maxDistance: number
+  ): Promise<UserProfileEntity[]> {
+    const res = await this.controller.listNearbyProfiles({
+      user_id: userId,
+      maxDistance,
+    });
+    if (!res.profiles) return [];
+    return res.profiles.map((row: any) =>
+      toDomainUserProfile({
+        id: row.id || row.user_id,
+        profile: row,
+        preferences: null,
+      })
+    );
+  }
+
+  async listNearbySwipeableProfiles(
+    userId: string,
+    maxDistance: number,
+    limit: number
+  ): Promise<UserProfileEntity[]> {
+    const res = await this.controller.listNearbySwipeableProfiles({
+      user_id: userId,
+      maxDistance,
+      count: limit,
+    });
+    if (!res.profiles) return [];
+    return res.profiles.map((row: any) =>
+      toDomainUserProfile({
+        id: row.id || row.user_id,
+        profile: row,
+        preferences: null,
+      })
+    );
+  }
+
+  async onboardUser(
+    userId: string,
+    data: Partial<UserProfileEntity>
+  ): Promise<UserProfileEntity> {
+    throw new Error("onboardUser not implemented in UserProfileDatasourceImpl");
   }
 }

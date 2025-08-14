@@ -3,6 +3,7 @@ import {
   toDomainInteraction,
   toDomainInteractionList,
 } from "@/src/infraestructure/mappers/InteractionMapper";
+import { AbstractInteractionDatasource } from "../../domain/datasources/AbstractInteractionDatasource";
 import { InteractionEntity } from "../../domain/entities/Interaction.entity";
 import {
   ListMatchesRequest,
@@ -20,7 +21,7 @@ import {
  * data operations as class methods, delegating to
  * InteractionController and using mappers.
  */
-export class InteractionDatasourceImpl {
+export class InteractionDatasourceImpl implements AbstractInteractionDatasource {
   private controller: InteractionController;
 
   constructor() {
