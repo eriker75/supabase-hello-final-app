@@ -86,14 +86,14 @@ export class UserLocationController {
   /**
    * Find a user location by userId.
    */
-  async findByUserId(userId: string): Promise<{ user_id: string; latitude: number; longitude: number } | null> {
+  async findByUserId(userId: string): Promise<{ user_id: string; latitude: number; longitude: number; updated_at?: string } | null> {
     const { data, error } = await supabase
       .from("user_locations")
       .select("*")
       .eq("user_id", userId)
       .limit(1);
     if (error || !data || data.length === 0) return null;
-    return data[0] as { user_id: string; latitude: number; longitude: number };
+    return data[0] as { user_id: string; latitude: number; longitude: number; updated_at?: string };
   }
 
   /**
@@ -103,7 +103,7 @@ export class UserLocationController {
     userId: string,
     latitude: number,
     longitude: number
-  ): Promise<{ user_id: string; latitude: number; longitude: number }> {
+  ): Promise<{ user_id: string; latitude: number; longitude: number; updated_at?: string }> {
     const { data, error } = await supabase
       .from("user_locations")
       .upsert([{ user_id: userId, latitude, longitude }], {
@@ -114,7 +114,7 @@ export class UserLocationController {
       throw new Error(
         "Error updating location: " + (error?.message || "Unknown error")
       );
-    return data[0] as { user_id: string; latitude: number; longitude: number };
+    return data[0] as { user_id: string; latitude: number; longitude: number; updated_at?: string };
   }
 
   /**

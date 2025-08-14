@@ -36,8 +36,53 @@ export class InteractionController {
       throw new Error("❌ Error fetching matches: " + error.message);
     }
 
-    // Enrich and type the matches
-    const matches: Match[] = (data || []) as Match[];
+    // Map raw DB objects to Match model
+    const matches: Match[] = (data || []).map((raw: any) => ({
+      user_id: raw.user_id,
+      username: raw.username,
+      avatar_url: raw.avatar_url,
+      latitude: raw.latitude,
+      longitude: raw.longitude,
+      distance_km: raw.distance_km,
+      matched_at: raw.matched_at,
+      has_chat: raw.has_chat,
+      id: raw.id,
+      created_at: raw.created_at,
+      updated_at: raw.updated_at,
+      alias: raw.alias,
+      biography: raw.biography,
+      birth_date: raw.birth_date,
+      gender: raw.gender,
+      avatar: raw.avatar,
+      address: raw.address,
+      last_online: raw.last_online,
+      is_onboarded: raw.is_onboarded,
+      is_verified: raw.is_verified,
+      is_online: raw.is_online,
+      is_active: raw.is_active,
+      location: raw.location,
+      secondary_images: raw.secondary_images,
+      preferences: raw.preferences ?? null,
+      profile: raw.profile ?? {
+        id: raw.id,
+        user_id: raw.user_id,
+        alias: raw.alias,
+        biography: raw.biography,
+        birth_date: raw.birth_date,
+        gender: raw.gender,
+        avatar: raw.avatar,
+        address: raw.address,
+        last_online: raw.last_online,
+        is_onboarded: raw.is_onboarded,
+        is_verified: raw.is_verified,
+        latitude: raw.latitude,
+        longitude: raw.longitude,
+        is_online: raw.is_online,
+        is_active: raw.is_active,
+        location: raw.location,
+        secondary_images: raw.secondary_images,
+      },
+    }));
     return { matches };
   }
 

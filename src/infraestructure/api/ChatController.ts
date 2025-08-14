@@ -491,5 +491,100 @@ export class ChatController {
     return { unread_count: count ?? 0 };
   }
 
-  // The rest of the methods (addParticipant, removeParticipant, etc.) can be implemented as needed.
+  async addParticipant(
+    chatId: string,
+    participant: { userId: string; role?: string }
+  ): Promise<void> {
+    const { error } = await supabase.from("participants").insert([
+      {
+        chat_id: chatId,
+        user_id: participant.userId,
+        role: participant.role || "member",
+      },
+    ]);
+    if (error) throw new Error("Error adding participant: " + error.message);
+  }
+
+  async removeParticipant(chatId: string, userId: string): Promise<void> {
+    const { error } = await supabase
+      .from("participants")
+      .delete()
+      .eq("chat_id", chatId)
+      .eq("user_id", userId);
+    if (error) throw new Error("Error removing participant: " + error.message);
+  }
+
+  async getParticipants(chatId: string): Promise<Profile[]> {
+    const { data, error } = await supabase
+      .from("participants")
+      .select("*")
+      .eq("chat_id", chatId);
+    if (error) throw new Error("Error fetching participants: " + error.message);
+    // This should be mapped to Profile[] in a real implementation
+    return (data || []) as Profile[];
+  }
+
+  async markMessageAsRead(
+    chatId: string,
+    messageId: string,
+    userId: string
+  ): Promise<void> {
+    const { error } = await supabase
+      .from("messages")
+      .update({
+        read_by: supabase.rpc("array_append", {
+          arr: "read_by",
+          value: userId,
+        }),
+      })
+      .eq("id", messageId)
+      .eq("chat_id", chatId);
+    if (error)
+      throw new Error("Error marking message as read: " + error.message);
+  }
+
+  async archiveChat(chatId: string): Promise<void> {
+    const { error } = await supabase
+      .from("chats")
+      .update({ is_archived: true })
+      .eq("id", chatId);
+    if (error) throw new Error("Error archiving chat: " + error.message);
+  }
+
+  async muteChat(chatId: string, userId: string): Promise<void> {
+    const { error } = await supabase
+      .from("chats")
+      .update({
+        muted_by: supabase.rpc("array_append", {
+          arr: "muted_by",
+          value: userId,
+        }),
+      })
+      .eq("id", chatId);
+    if (error) throw new Error("Error muting chat: " + error.message);
+  }
+
+  async unmuteChat(chatId: string, userId: string): Promise<void> {
+    const { error } = await supabase
+      .from("chats")
+      .update({
+        muted_by: supabase.rpc("array_remove", {
+          arr: "muted_by",
+          value: userId,
+        }),
+      })
+      .eq("id", chatId);
+    if (error) throw new Error("Error unmuting chat: " + error.message);
+  }
+
+  async createWithParticipants(
+    chatReq: CreateChatRequest,
+    participants: { userId: string; role?: string }[]
+  ): Promise<CreateChatResponse> {
+    const chatRes = await this.createChat(chatReq);
+    for (const participant of participants) {
+      await this.addParticipant(chatRes.chat_id, participant);
+    }
+    return { chat_id: chatRes.chat_id };
+  }
 }
