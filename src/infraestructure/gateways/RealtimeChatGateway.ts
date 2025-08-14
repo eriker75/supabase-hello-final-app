@@ -1,14 +1,14 @@
 import { subscribeTable } from "@/src/utils/suscriber";
 import { RealtimeChannel } from "@supabase/supabase-js";
-import { RealtimeChatService } from "../services/RealtimeChatService";
+import { RealtimeChatHandler } from "../handlers/RealtimeChatHandlers";
 
 /**
  * RealtimeChatGateway: Subscribes to realtime events and delegates to the service.
  */
 export class RealtimeChatGateway {
-  private service: RealtimeChatService;
+  private service: RealtimeChatHandler;
 
-  constructor(service: RealtimeChatService) {
+  constructor(service: RealtimeChatHandler) {
     this.service = service;
   }
 

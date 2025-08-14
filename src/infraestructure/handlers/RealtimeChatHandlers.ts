@@ -1,7 +1,7 @@
 /**
- * RealtimeChatService: Contains business logic for handling realtime chat events.
+ * RealtimeChatHandler: Contains business logic for handling realtime chat events.
  */
-export class RealtimeChatService {
+export class RealtimeChatHandler {
   handleNewMessage(newMessageEvent: {
     id: string;
     chatId: string;
@@ -10,7 +10,7 @@ export class RealtimeChatService {
     createdAt: string;
   }) {
     // Business logic for a new message event
-    console.log("🧠 [Service] Handling new message event:", newMessageEvent);
+    console.log("🧠 [Handler] Handling new message event:", newMessageEvent);
     // ...implement business logic here (e.g., update state, notify, etc.)
   }
 
@@ -21,7 +21,7 @@ export class RealtimeChatService {
     createdAt: string;
   }) {
     // Business logic for a new chat event
-    console.log("🧠 [Service] Handling new chat event:", newChatEvent);
+    console.log("🧠 [Handler] Handling new chat event:", newChatEvent);
     // ...implement business logic here
   }
 
@@ -32,7 +32,7 @@ export class RealtimeChatService {
     updatedAt: string;
   }) {
     // Business logic for a typing event
-    console.log("🧠 [Service] Handling typing event:", newTypingEvent);
+    console.log("🧠 [Handler] Handling typing event:", newTypingEvent);
     // ...implement business logic here
   }
 
@@ -43,7 +43,7 @@ export class RealtimeChatService {
   }) {
     // Business logic for a user online/offline event
     console.log(
-      "🧠 [Service] Handling user online event:",
+      "🧠 [Handler] Handling user online event:",
       newUserOnlineEvent
     );
     // ...implement business logic here
@@ -57,7 +57,7 @@ export class RealtimeChatService {
   }) {
     // Business logic for an unread count event
     console.log(
-      "🧠 [Service] Handling unread count event:",
+      "🧠 [Handler] Handling unread count event:",
       newUnreadedCountEvent
     );
     // ...implement business logic here

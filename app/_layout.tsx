@@ -14,7 +14,7 @@ import React, { useEffect } from "react";
 import { AppState, Platform, useColorScheme } from "react-native";
 import "react-native-reanimated";
 import { RealtimeChatGateway } from "../src/infraestructure/gateways/RealtimeChatGateway";
-import { RealtimeChatService } from "../src/infraestructure/services/RealtimeChatService";
+import { RealtimeChatHandler } from "../src/infraestructure/handlers/RealtimeChatHandlers";
 
 const queryClient = new QueryClient();
 SplashScreen.preventAutoHideAsync();
@@ -60,8 +60,8 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    const controller = new RealtimeChatService();
-    const datasource = new RealtimeChatGateway(controller);
+    const handler = new RealtimeChatHandler();
+    const datasource = new RealtimeChatGateway(handler);
     const unsubscribe = datasource.startAllRealtimeListeners();
     return () => unsubscribe();
   }, []);
