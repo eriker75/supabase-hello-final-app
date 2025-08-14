@@ -1,8 +1,9 @@
 export interface CreateChatRequest {
   creator_id: string;
   name?: string;
-  type?: string;
+  type: "group" | "private";
   description?: string;
+  participants: string[];
 }
 
 export interface CreateChatResponse {

@@ -28,13 +28,26 @@ import {
  * ChatController: Implements chat-related data operations as class methods.
  */
 export class ChatController {
+
   /**
    * Create a new chat.
    */
   async createChat(req: CreateChatRequest): Promise<CreateChatResponse> {
-    const { name, description, type, creator_id } = req;
+    const { name, description, type, creator_id, participants } = req;
     if (!creator_id) {
       throw new Error("param creator_id is required");
+    }
+    if (!type) {
+      throw new Error("param type is required");
+    }
+    if (!participants || !Array.isArray(participants)) {
+      throw new Error("param participants is required and must be an array");
+    }
+    if (type !== "group" && type !== "private") {
+      throw new Error('param type must be either "group" or "private"');
+    }
+    if (type === "private" && participants.length !== 1) {
+      throw new Error("For private chats, participants array must have 1 element (creator is added by trigger)");
     }
 
     const { data, error } = await supabase
@@ -48,7 +61,25 @@ export class ChatController {
       );
     }
 
-    return { chat_id: data[0].id };
+    const chatId = data[0].id;
+
+    // Add participants (excluding creator_id)
+    const filteredParticipants = participants.filter((id) => id !== creator_id);
+    if (filteredParticipants.length > 0) {
+      const insertRows = filteredParticipants.map((userId) => ({
+        chat_id: chatId,
+        user_id: userId,
+        role: "member",
+      }));
+      const { error: partError } = await supabase
+        .from("participants")
+        .insert(insertRows);
+      if (partError) {
+        throw new Error("Chat created but failed to add participants: " + partError.message);
+      }
+    }
+
+    return { chat_id: chatId };
   }
 
   /**
