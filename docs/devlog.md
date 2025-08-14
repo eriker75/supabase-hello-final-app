@@ -1,5 +1,12 @@
 # Devlog
 
+## 2025-08-14 - Refactor Onboarding Store y helper de validación
+
+- Se refactorizó el store de onboarding para seguir la arquitectura y mejores prácticas de los stores de perfil de usuario.
+- Se eliminaron los métodos `submitOnboarding` y `validateCurrentStep` del store, moviendo la validación a un helper en `src/utils/validateOnboardingStep.ts`.
+- El store ahora utiliza interfaces, state creator, persist, immer, partialize y zustandAsyncStorage, siguiendo el patrón de los stores de perfil.
+- Documentado el proceso y plan en [`2025-08-14-refactor-onboarding-store.md`](./2025-08-14-refactor-onboarding-store.md).
+
 ## 2025-08-14 - Migración de entidades a interfaces y datasources a clases abstractas
 
 Se realizó una migración estructural importante en la capa de dominio e infraestructura:

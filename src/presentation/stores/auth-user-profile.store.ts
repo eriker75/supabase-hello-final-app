@@ -8,11 +8,11 @@ export interface AuthUserProfileState {
   profileId: string;
   birthDate: string;
   age: number;
-  gender: string;
+  gender: number;
   gederInterests: string[];
   minAgePreference: number;
   maxAgePreference: number;
-  maxDistance: number;
+  maxDistancePreference: number;
   alias: string;
   biography: string;
   avatar: string;
@@ -45,11 +45,11 @@ const initialState: AuthUserProfileState = {
   profileId: "",
   birthDate: "",
   age: 18,
-  gender: "",
+  gender: 0,
   gederInterests: [],
   minAgePreference: 18,
   maxAgePreference: 98,
-  maxDistance: 200,
+  maxDistancePreference: 200,
   alias: "",
   biography: "",
   avatar: "",

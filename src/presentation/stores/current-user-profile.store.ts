@@ -8,7 +8,7 @@ export interface CurrentUserProfileState {
   profileId: string;
   birthDate: string;
   age: number;
-  gender: string;
+  gender: number;
   gederInterests: string[];
   minAgePreference: number;
   maxAgePreference: number;
@@ -46,7 +46,7 @@ const initialState: CurrentUserProfileState = {
   profileId: "",
   birthDate: "",
   age: 18,
-  gender: "",
+  gender: 0,
   gederInterests: [],
   minAgePreference: 18,
   maxAgePreference: 98,
