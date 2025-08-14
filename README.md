@@ -13,6 +13,7 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 - Infrastructure datasources in `src/infraestructure/datasources/` are implemented as classes (e.g., `ChatDatasourceImpl`, `UserProfileDatasourceImpl`), with all data operations as class methods.
 - This structure improves maintainability and prepares for future decoupling between domain and infrastructure layers.
 - **ChatRepositoryImpl** in `src/infraestructure/repositories/` is now implemented as a set of exported [React Query](https://tanstack.com/query/latest) hooks, not a class. All chat data access is performed via hooks (see [`docs/2025-08-12-react-query-chat-repository.md`](./docs/2025-08-12-react-query-chat-repository.md) for details).
+- **OnboardingRepositoryImpl** y **InteractionRepositoryImpl** en `src/infraestructure/repositories/` siguen el mismo patrón de hooks React Query, usando instancias singleton de sus datasources y exponiendo hooks para las operaciones principales de onboarding e interacción (ver [`docs/2025-08-14-add-onboarding-interaction-repositories.md`](./docs/2025-08-14-add-onboarding-interaction-repositories.md)).
 - Other repositories (e.g., `UserProfileRepositoryImpl`, `UserLocationRepositoryImpl`) remain class-based and conform to their respective domain interfaces.
 
 ## Get started
