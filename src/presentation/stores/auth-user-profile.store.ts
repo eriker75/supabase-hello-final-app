@@ -13,6 +13,7 @@ export interface AuthUserProfileState {
   minAgePreference: number;
   maxAgePreference: number;
   maxDistancePreference: number;
+  name: string;
   alias: string;
   biography: string;
   avatar: string;
@@ -50,6 +51,7 @@ const initialState: AuthUserProfileState = {
   minAgePreference: 18,
   maxAgePreference: 98,
   maxDistancePreference: 200,
+  name: "",
   alias: "",
   biography: "",
   avatar: "",

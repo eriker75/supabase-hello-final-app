@@ -9,7 +9,7 @@ export interface OnboardingState {
   alias: string;
   birthDate: string;
   age: number;
-  gender: string;
+  gender: number;
   genderInterests: string[];
   minAgePreference: number;
   maxAgePreference: number;
@@ -29,7 +29,7 @@ export interface OnboardingActions {
   setAlias: (alias: string) => void;
   setBirthDate: (birthDate: string) => void;
   setAge: (age: number) => void;
-  setGender: (gender: string) => void;
+  setGender: (gender: number) => void;
   setGenderInterests: (genderInterests: string[]) => void;
   addGenderInterest: (interest: string) => void;
   removeGenderInterest: (interest: string) => void;
@@ -61,7 +61,7 @@ const initialState: OnboardingState = {
   alias: "",
   birthDate: "",
   age: 18,
-  gender: "",
+  gender: 0,
   genderInterests: [],
   minAgePreference: 18,
   maxAgePreference: 98,

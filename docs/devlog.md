@@ -46,3 +46,10 @@ Ver detalles y checklist en [`2025-08-14-migracion-entidades-a-interfaces.md`](.
 - Improved consistency and maintainability of the codebase for future development.
 
 See [`2025-08-14-refactor-datasource-abstract-classes.md`](2025-08-14-refactor-datasource-abstract-classes.md) for full details.
+
+## 2025-08-15 - Implementación de OnboardingService siguiendo el patrón de ChatService
+
+- Se creó `OnboardingService` en `src/infraestructure/services/OnboardingService.ts`, siguiendo la arquitectura y patrones de `ChatService`.
+- El servicio expone hooks para manipular el estado de onboarding y un hook principal para realizar el onboarding del usuario usando la mutación de React Query.
+- Integra el store de onboarding y el repository `OnboardingRepositoryImpl` para mantener la consistencia y modularidad.
+- Se documentó el proceso y plan en [`2025-08-15-onboarding-service.md`](./2025-08-15-onboarding-service.md).
