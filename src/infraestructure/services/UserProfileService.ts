@@ -20,7 +20,7 @@ import {
   useUpdateUserLocation,
   useUpdateUserProfile,
 } from "@/src/infraestructure/repositories/UserProfileRepositoryImpl";
-import { authUserProfileStore } from "@/src/presentation/stores/auth-user-profile.store";
+import { useAuthUserProfileStore } from "@/src/presentation/stores/auth-user-profile.store";
 import { currentUserProfileStore } from "@/src/presentation/stores/current-user-profile.store";
 import { useCallback } from "react";
 
@@ -41,12 +41,12 @@ export function useUpdateCurrentUserProfile() {
 }
 
 export function useSetAuthUserProfile() {
-  const setProfile = authUserProfileStore((s: any) => s.setProfile);
+  const setProfile = useAuthUserProfileStore((s: any) => s.setProfile);
   return useCallback(setProfile, [setProfile]);
 }
 
 export function useUpdateAuthUserProfile() {
-  const updateProfile = authUserProfileStore((s) => s.updateProfile);
+  const updateProfile = useAuthUserProfileStore((s) => s.updateProfile);
   return useCallback(updateProfile, [updateProfile]);
 }
 
@@ -56,7 +56,7 @@ export function useSetCurrentUserLoading() {
 }
 
 export function useSetAuthUserLoading() {
-  const setLoading = authUserProfileStore((s) => s.setLoading);
+  const setLoading = useAuthUserProfileStore((s) => s.setLoading);
   return useCallback(setLoading, [setLoading]);
 }
 

@@ -76,11 +76,37 @@ export default function RootLayout() {
         <ThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
-          <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: "default",
+            }}
+          >
+            <Stack.Screen name="index" />
+            <Stack.Screen
+              name="onboarding"
+              options={{
+                headerShown: false,
+                presentation: "modal",
+              }}
+            />
+            <Stack.Screen
+              name="login"
+              options={{
+                title: "Iniciar sesión",
+                headerShown: false,
+                headerBackTitle: "Atrás",
+              }}
+            />
+            <Stack.Screen
+              name="dashboard"
+              options={{
+                headerShown: false,
+                animation: "fade",
+              }}
+            />
           </Stack>
-          <StatusBar style="auto" />
+          <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
         </ThemeProvider>
       </GluestackUIProvider>
     </QueryClientProvider>

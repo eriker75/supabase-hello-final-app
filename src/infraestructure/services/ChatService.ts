@@ -5,7 +5,10 @@ import { ChatDatasourceImpl } from "@/src/infraestructure/datasources/ChatDataso
 import { chatListStore } from "@/src/presentation/stores/chat-list.store";
 import { currentChatStore } from "@/src/presentation/stores/current-chat.store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
+
+// React Query + store sync hook for user chats
+import { useFindByParticipant } from "@/src/infraestructure/repositories/ChatRepositoryImpl";
 
 export interface CreateChatService {
   chat: ChatEntity;
@@ -33,6 +36,51 @@ export interface MarkMessageAsReadService {
 
 const chatDatasource = new ChatDatasourceImpl();
 
+/**
+ * Fetches chats for a user using React Query and syncs with the chat list store.
+ * Returns the React Query result (data, isLoading, error, etc.).
+ */
+export function useUserChatsService(userId: string) {
+  const query = useFindByParticipant(userId);
+  const setChats = chatListStore((s) => s.setChats);
+
+  useEffect(() => {
+    if (query.data && Array.isArray(query.data)) {
+      const mapped = query.data.map((chat) => {
+        const lastMsg = Array.isArray(chat.messages) && chat.messages.length > 0
+          ? chat.messages[chat.messages.length - 1]
+          : null;
+        return {
+          chatId: chat.id,
+          chatImage: "", // Could be derived from participants or left empty
+          chatDescription: chat.description ?? "",
+          chatParticipants: chat.participants?.map((p) => p.userId) ?? [],
+          chatIsActive: chat.isActive,
+          chatLastMessageId: chat.lastMessageId ?? (lastMsg ? lastMsg.id : ""),
+          chatLastMessageContent: lastMsg ? lastMsg.content : "",
+          chatLastMessageStatus: "", // Not available, left empty
+          chatLastMessageIsByMe: false, // Not available, left false
+          unreadedCount: 0, // Not available, left 0
+          chatType: chat.type,
+          chatLastMessageCreatedAt: lastMsg
+            ? (typeof lastMsg.createdAt === "string"
+                ? lastMsg.createdAt
+                : lastMsg.createdAt?.toISOString?.() ?? "")
+            : (typeof chat.createdAt === "string"
+                ? chat.createdAt
+                : chat.createdAt?.toISOString?.() ?? ""),
+        };
+      });
+      setChats(mapped);
+    }
+  }, [query.data, setChats]);
+
+  return query;
+}
+// Plain async function to fetch chats for a user (for use outside React Query)
+export async function getChatsForUser(userId: string): Promise<ChatEntity[]> {
+  return chatDatasource.findByParticipant(userId);
+}
 // --- Chat List Store Actions ---
 
 export function useSetChats() {

@@ -53,3 +53,31 @@ See [`2025-08-14-refactor-datasource-abstract-classes.md`](2025-08-14-refactor-d
 - El servicio expone hooks para manipular el estado de onboarding y un hook principal para realizar el onboarding del usuario usando la mutación de React Query.
 - Integra el store de onboarding y el repository `OnboardingRepositoryImpl` para mantener la consistencia y modularidad.
 - Se documentó el proceso y plan en [`2025-08-15-onboarding-service.md`](./2025-08-15-onboarding-service.md).
+
+## 2025-08-15 - Implementación de useLogout hook
+
+- Se implementó el hook `useLogout` en `src/presentation/hooks/useLogout.ts` para cerrar sesión usando Supabase y limpiar el store de usuario autenticado.
+- El hook maneja estados de loading y error, y expone una función `logout` lista para usar en componentes.
+- Documentado el proceso y plan en [`2025-08-15-add-useLogout-hook.md`](./2025-08-15-add-useLogout-hook.md).
+
+## 2025-08-15 - Refactor de vista de perfil para usar datos dinámicos y store
+
+- Se refactorizó `app/dashboard/profile/[id]/index.tsx` para que utilice los datos del store `currentUserProfileStore` para el renderizado inicial rápido y, al montar la vista, obtenga los datos actualizados del perfil visitado usando el servicio y actualice el store.
+- Esto permite una experiencia de carga fluida y asegura que la información mostrada esté sincronizada con el backend.
+- Documentado el proceso y plan en [`2025-08-15-profile-view-dynamic-current-user.md`](./2025-08-15-profile-view-dynamic-current-user.md).
+
+## 2025-08-15 - Refactor de vista de chats para usar lógica de servicio
+
+- Se refactorizó `app/dashboard/chats/index.tsx` para eliminar toda la lógica de obtención de chats basada en hooks y stores, conservando únicamente el diseño/UI.
+- Ahora la lista de chats iniciales se obtiene usando la función asíncrona `getChatsForUser(userId)` expuesta en `src/infraestructure/services/ChatService.ts`.
+- Se eliminó la lógica de tiempo real y de indicadores de escritura para simplificar la vista.
+- El listado se almacena en estado local y se maneja el loading/error de forma interna.
+- Documentado el proceso y plan en [`2025-08-15-refactor-chats-list.md`](./2025-08-15-refactor-chats-list.md).
+
+## 2025-08-15 - Refactor de vista onboarding/index.tsx para uso correcto de stores y validación
+
+- Se refactorizó `app/onboarding/index.tsx` para importar y usar correctamente los stores de onboarding y autenticación desde `src/presentation/stores/`.
+- Se eliminó el uso del método obsoleto `validateCurrentStep` del store de onboarding.
+- Ahora la validación del paso usa el helper `validateOnboardingStep` de `src/utils/validateOnboardingStep.ts`.
+- Se ajustó la lógica de redirección para usar la propiedad booleana `isOnboarded` del store de autenticación.
+- Documentado el proceso y plan en [`2025-08-15-refactor-onboarding-index-store-usage.md`](./2025-08-15-refactor-onboarding-index-store-usage.md).

@@ -1,6 +1,6 @@
 // OnboardingService.ts
 import { useOnboardUser } from "@/src/infraestructure/repositories/OnboardingRepositoryImpl";
-import { authUserProfileStore } from "@/src/presentation/stores/auth-user-profile.store";
+import { useAuthUserProfileStore } from "@/src/presentation/stores/auth-user-profile.store";
 import { useOnboardingStore } from "@/src/presentation/stores/onboarding.store";
 import { useCallback } from "react";
 
@@ -8,7 +8,7 @@ import { useCallback } from "react";
  * Store action hook for setting the authenticated user profile.
  */
 export function useSetAuthUserProfile() {
-  const setProfile = authUserProfileStore((s) => s.setProfile);
+  const setProfile = useAuthUserProfileStore((s) => s.setProfile);
   return useCallback(setProfile, [setProfile]);
 }
 

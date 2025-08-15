@@ -97,7 +97,7 @@ const authUserProfileStoreCreator: StateCreator<
     })),
 });
 
-export const authUserProfileStore = create<AuthUserProfileStore>()(
+export const useAuthUserProfileStore = create<AuthUserProfileStore>()(
   persist(immer(authUserProfileStoreCreator), {
     name: "auth-user-profile-store",
     storage: zustandAsyncStorage,
