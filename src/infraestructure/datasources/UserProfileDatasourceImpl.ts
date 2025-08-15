@@ -24,17 +24,223 @@ import {
 } from "../../domain/models/user";
 
 /**
- * UserProfileDatasourceImpl: Implements user and profile data operations
- * as class methods, delegating to UserProfileController and using mappers.
+ * UserProfileDatasourceImpl: Implements user and profile data operations,
+ * delegating to UserProfileController and using mappers.
  */
-export class UserProfileDatasourceImpl implements AbstractUserProfileDatasource {
+export class UserProfileDatasourceImpl
+  implements AbstractUserProfileDatasource
+{
   private controller: UserProfileController;
 
   constructor() {
     this.controller = new UserProfileController();
   }
 
-  // Existing CRUD and finder methods
+  // --- CRUD ---
+
+  /** Find a profile by its unique id */
+  async findById(id: string): Promise<UserProfileEntity | null> {
+    return this.getUser({ id });
+  }
+
+  /** List all profiles (default pagination) */
+  async findAll(): Promise<UserProfileEntity[]> {
+    return this.listUsers({ limit: 100, offset: 0 });
+  }
+
+  /** Save a new user profile entity */
+  async save(entity: UserProfileEntity): Promise<void> {
+    await this.createUser({
+      email: entity.email,
+      password: "changeme", // Placeholder for required field
+      alias: entity.alias,
+      gender: entity.gender,
+      avatar: entity.avatar,
+      biography: entity.biography,
+      birth_date: entity.birthDate ? entity.birthDate.toISOString() : undefined,
+      is_onboarded: entity.isOnboarded,
+      is_verified: entity.isVerified,
+      is_active: entity.isActive,
+      latitude: entity.latitude,
+      longitude: entity.longitude,
+      address: entity.address,
+      secondary_images: entity.secondaryImages,
+      // Add more fields as needed
+    });
+  }
+
+  /** Update an existing user profile entity */
+  async update(entity: UserProfileEntity): Promise<void> {
+    await this.updateUser({
+      id: entity.id,
+      alias: entity.alias,
+      gender: entity.gender,
+      avatar: entity.avatar,
+      biography: entity.biography,
+      birth_date: entity.birthDate ? entity.birthDate.toISOString() : undefined,
+      is_onboarded: entity.isOnboarded,
+      is_verified: entity.isVerified,
+      is_active: entity.isActive,
+      latitude: entity.latitude,
+      longitude: entity.longitude,
+      address: entity.address,
+      secondary_images: entity.secondaryImages,
+      // Add more fields as needed
+    });
+  }
+
+  /** Delete a user profile by id */
+  async delete(id: string): Promise<void> {
+    await this.deleteUser({ id });
+  }
+
+  // --- Finders ---
+
+  /** Find a profile by userId */
+  async findByUserId(userId: string): Promise<UserProfileEntity | null> {
+    return this.getUser({ id: userId });
+  }
+
+  /** Find a profile by email */
+  async findByEmail(email: string): Promise<UserProfileEntity | null> {
+    const res = await this.controller.findByEmail(email);
+    if (!res) return null;
+    return toDomainUserProfile({
+      id: res.id || res.user_id,
+      profile: res,
+      preferences: null,
+    });
+  }
+
+  /** Find a profile by alias */
+  async findByAlias(alias: string): Promise<UserProfileEntity | null> {
+    const res = await this.controller.findByAlias(alias);
+    if (!res) return null;
+    return toDomainUserProfile({
+      id: res.id || res.user_id,
+      profile: res,
+      preferences: null,
+    });
+  }
+
+  // --- Preferences ---
+
+  /** Get preferences for a user */
+  getPreferences(userId: string): Promise<any | null> {
+    return this.controller.getPreferences(userId);
+  }
+
+  /** Set preferences for a user */
+  setPreferences(userId: string, preferences: any): Promise<void> {
+    return this.controller.setPreferences(userId, preferences);
+  }
+
+  // --- Location ---
+
+  /** Update user location (latitude, longitude) */
+  updateLocation(
+    userId: string,
+    latitude: number,
+    longitude: number
+  ): Promise<void> {
+    return this.controller.updateLocation(userId, latitude, longitude);
+  }
+
+  // --- Geo queries ---
+
+  /** List nearby profiles (geo) */
+  async listNearbyProfiles(
+    userId: string,
+    maxDistance: number
+  ): Promise<UserProfileEntity[]> {
+    const profiles = await this.controller.listNearbyProfiles(
+      userId,
+      maxDistance
+    );
+    return (profiles || []).map((row: any) =>
+      toDomainUserProfile({
+        id: row.id || row.user_id,
+        profile: row,
+        preferences: null,
+      })
+    );
+  }
+
+  /** List nearby swipeable profiles (geo) */
+  async listNearbySwipeableProfiles(
+    userId: string,
+    maxDistance: number,
+    limit: number
+  ): Promise<UserProfileEntity[]> {
+    const profiles = await this.controller.listNearbySwipeableProfiles(
+      userId,
+      maxDistance,
+      limit
+    );
+    return (profiles || []).map((row: any) =>
+      toDomainUserProfile({
+        id: row.id || row.user_id,
+        profile: row,
+        preferences: null,
+      })
+    );
+  }
+
+  /** List nearby matches (geo) */
+  async listNearbyMatches(userId: string, maxDistance: number): Promise<any[]> {
+    return await this.controller.listNearbyMatches(userId, maxDistance);
+  }
+
+  /** Update my location (geo) */
+  async updateMyLocation(
+    userId: string,
+    latitude: number,
+    longitude: number
+  ): Promise<void> {
+    await this.controller.updateMyLocation(userId, latitude, longitude);
+  }
+
+  // --- Onboarding ---
+
+  /** Onboard a user (not implemented) */
+  async onboardUser(
+    userId: string,
+    data: Partial<UserProfileEntity>
+  ): Promise<UserProfileEntity> {
+    throw new Error("onboardUser not implemented in UserProfileDatasourceImpl");
+  }
+
+  // --- Block/report ---
+
+  /** Block a user */
+  blockUser(blockerId: string, blockedId: string): Promise<void> {
+    return this.controller.blockUser(blockerId, blockedId);
+  }
+
+  /** Report a user */
+  reportUser(
+    reporterId: string,
+    reportedId: string,
+    reason: string,
+    details?: string
+  ): Promise<void> {
+    return this.controller.reportUser(reporterId, reportedId, reason, details);
+  }
+
+  // --- Online status ---
+
+  /** Set user online */
+  setOnline(userId: string): Promise<void> {
+    return this.controller.setOnline(userId);
+  }
+
+  /** Set user offline */
+  setOffline(userId: string): Promise<void> {
+    return this.controller.setOffline(userId);
+  }
+
+  // --- Additional CRUD and finder methods for compatibility ---
+
   async createUser(req: CreateUserRequest): Promise<UserProfileEntity> {
     const res: UserResponse = await this.controller.createUser(req);
     const profile = {
@@ -195,168 +401,5 @@ export class UserProfileDatasourceImpl implements AbstractUserProfileDatasource 
 
   async deleteProfile(req: DeleteProfileRequest): Promise<void> {
     await this.controller.deleteProfile(req);
-  }
-
-  // Preferences and location
-  getPreferences(userId: string): Promise<any | null> {
-    return this.controller.getPreferences(userId);
-  }
-
-  setPreferences(userId: string, preferences: any): Promise<void> {
-    return this.controller.setPreferences(userId, preferences);
-  }
-
-  updateLocation(
-    userId: string,
-    latitude: number,
-    longitude: number
-  ): Promise<void> {
-    return this.controller.updateLocation(userId, latitude, longitude);
-  }
-
-  // Block/report/online
-  blockUser(blockerId: string, blockedId: string): Promise<void> {
-    return this.controller.blockUser(blockerId, blockedId);
-  }
-
-  reportUser(
-    reporterId: string,
-    reportedId: string,
-    reason: string,
-    details?: string
-  ): Promise<void> {
-    return this.controller.reportUser(reporterId, reportedId, reason, details);
-  }
-
-  setOnline(userId: string): Promise<void> {
-    return this.controller.setOnline(userId);
-  }
-
-  setOffline(userId: string): Promise<void> {
-    return this.controller.setOffline(userId);
-  }
-
-  // AbstractUserProfileDatasource required methods (aliases/adapters)
-  async findById(id: string): Promise<UserProfileEntity | null> {
-    return this.getUser({ id });
-  }
-
-  async findAll(): Promise<UserProfileEntity[]> {
-    // Provide default pagination for demo; adjust as needed
-    return this.listUsers({ limit: 100, offset: 0 });
-  }
-
-  async save(entity: UserProfileEntity): Promise<void> {
-    // Map UserProfileEntity to CreateUserRequest as needed
-    await this.createUser({
-      email: entity.email,
-      password: "changeme", // Placeholder for required field
-      alias: entity.alias,
-      gender: entity.gender,
-      avatar: entity.avatar,
-      biography: entity.biography,
-      birth_date: entity.birthDate ? entity.birthDate.toISOString() : undefined,
-      is_onboarded: entity.isOnboarded,
-      is_verified: entity.isVerified,
-      is_active: entity.isActive,
-      latitude: entity.latitude,
-      longitude: entity.longitude,
-      address: entity.address,
-      secondary_images: entity.secondaryImages,
-      // Add more fields as needed
-    });
-  }
-
-  async update(entity: UserProfileEntity): Promise<void> {
-    await this.updateUser({
-      id: entity.id,
-      alias: entity.alias,
-      gender: entity.gender,
-      avatar: entity.avatar,
-      biography: entity.biography,
-      birth_date: entity.birthDate ? entity.birthDate.toISOString() : undefined,
-      is_onboarded: entity.isOnboarded,
-      is_verified: entity.isVerified,
-      is_active: entity.isActive,
-      latitude: entity.latitude,
-      longitude: entity.longitude,
-      address: entity.address,
-      secondary_images: entity.secondaryImages,
-      // Add more fields as needed
-    });
-  }
-
-  async delete(id: string): Promise<void> {
-    await this.deleteUser({ id });
-  }
-
-  async findByUserId(userId: string): Promise<UserProfileEntity | null> {
-    return this.getUser({ id: userId });
-  }
-
-  async findByEmail(email: string): Promise<UserProfileEntity | null> {
-    const res = await this.controller.findByEmail(email);
-    if (!res) return null;
-    // Wrap as ProfileResponse for toDomainUserProfile
-    return toDomainUserProfile({
-      id: res.id || res.user_id,
-      profile: res,
-      preferences: null,
-    });
-  }
-
-  async findByAlias(alias: string): Promise<UserProfileEntity | null> {
-    const res = await this.controller.findByAlias(alias);
-    if (!res) return null;
-    return toDomainUserProfile({
-      id: res.id || res.user_id,
-      profile: res,
-      preferences: null,
-    });
-  }
-
-  async listNearbyProfiles(
-    userId: string,
-    maxDistance: number
-  ): Promise<UserProfileEntity[]> {
-    const res = await this.controller.listNearbyProfiles({
-      user_id: userId,
-      maxDistance,
-    });
-    if (!res.profiles) return [];
-    return res.profiles.map((row: any) =>
-      toDomainUserProfile({
-        id: row.id || row.user_id,
-        profile: row,
-        preferences: null,
-      })
-    );
-  }
-
-  async listNearbySwipeableProfiles(
-    userId: string,
-    maxDistance: number,
-    limit: number
-  ): Promise<UserProfileEntity[]> {
-    const res = await this.controller.listNearbySwipeableProfiles({
-      user_id: userId,
-      maxDistance,
-      count: limit,
-    });
-    if (!res.profiles) return [];
-    return res.profiles.map((row: any) =>
-      toDomainUserProfile({
-        id: row.id || row.user_id,
-        profile: row,
-        preferences: null,
-      })
-    );
-  }
-
-  async onboardUser(
-    userId: string,
-    data: Partial<UserProfileEntity>
-  ): Promise<UserProfileEntity> {
-    throw new Error("onboardUser not implemented in UserProfileDatasourceImpl");
   }
 }

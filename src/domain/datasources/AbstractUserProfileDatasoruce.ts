@@ -22,6 +22,8 @@ export abstract class AbstractUserProfileDatasource {
   // Geo queries
   abstract listNearbyProfiles(userId: string, maxDistance: number): Promise<UserProfileEntity[]>;
   abstract listNearbySwipeableProfiles(userId: string, maxDistance: number, limit: number): Promise<UserProfileEntity[]>;
+  abstract listNearbyMatches(userId: string, maxDistance: number): Promise<any[]>;
+  abstract updateMyLocation(userId: string, latitude: number, longitude: number): Promise<void>;
   // Onboarding
   abstract onboardUser(userId: string, data: Partial<UserProfileEntity>): Promise<UserProfileEntity>;
   // Block/report

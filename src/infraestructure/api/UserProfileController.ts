@@ -1,4 +1,5 @@
 import { supabase } from "@/src/utils/supabase";
+import { Match } from "../../domain/models/match";
 import {
   CreateProfileRequest,
   DeleteProfileRequest,
@@ -8,8 +9,6 @@ import {
   ProfileListResponse,
   ProfilePreferences,
   ProfileResponse,
-  SwipeableProfile,
-  SwipeableProfilesResponse,
   UpdateProfileRequest,
 } from "../../domain/models/profile";
 import {
@@ -29,15 +28,12 @@ import {
  * UserProfileController: Implements user and profile data operations as class methods.
  */
 export class UserProfileController {
-  /**
-   * Create a new user, profile, and preferences
-   */
+
   async createUser(req: CreateUserRequest): Promise<UserResponse> {
     const { email, password, ...rest } = req;
     if (!email || !password) {
       throw new Error("--email and --password are required");
     }
-
     // 1. Create user in auth.users (simulate, as this is not implemented here)
     const user_id = "mocked-user-id"; // Replace with actual user creation logic
 
@@ -90,13 +86,8 @@ export class UserProfileController {
     };
   }
 
-  /**
-   * List users with profile and preferences, paginated
-   */
   async listUsers(req: ListUsersRequest): Promise<UserListResponse> {
     const { limit, offset } = req;
-
-    // 1. Get profiles with pagination
     const {
       data: profiles,
       error,
@@ -110,7 +101,6 @@ export class UserProfileController {
       throw new Error("Error listing users: " + error.message);
     }
 
-    // 2. For each profile, get preferences by user_id
     const users: UserResponse[] = await Promise.all(
       (profiles || []).map(async (profile: UserProfile) => {
         const { data: preferencesArr, error: prefError } = await supabase
@@ -128,7 +118,7 @@ export class UserProfileController {
           profile,
           preferences:
             preferencesArr && preferencesArr.length > 0
-              ? preferencesArr[0] as UserPreferences
+              ? (preferencesArr[0] as UserPreferences)
               : null,
         };
       })
@@ -144,16 +134,11 @@ export class UserProfileController {
     };
   }
 
-  /**
-   * Get user by id with profile and preferences
-   */
   async getUser(req: GetUserRequest): Promise<UserResponse> {
     const user_id = req.id;
     if (!user_id) {
       throw new Error("--id is required");
     }
-
-    // 1. Get profile
     const { data: profiles, error } = await supabase
       .from("profiles")
       .select("*")
@@ -167,7 +152,6 @@ export class UserProfileController {
     }
     const profile = profiles[0] as UserProfile;
 
-    // 2. Get preferences
     const { data: preferencesArr, error: prefError } = await supabase
       .from("preferences")
       .select("*")
@@ -183,14 +167,11 @@ export class UserProfileController {
       profile,
       preferences:
         preferencesArr && preferencesArr.length > 0
-          ? preferencesArr[0] as UserPreferences
+          ? (preferencesArr[0] as UserPreferences)
           : null,
     };
   }
 
-  /**
-   * Get "me" user by email and password
-   */
   async getMeUser(req: MeUserRequest): Promise<UserResponse> {
     const { email, password } = req;
     if (!email || !password) {
@@ -198,8 +179,6 @@ export class UserProfileController {
     }
     // Simulate user_id retrieval
     const user_id = "mocked-user-id";
-
-    // 4. Get profile
     const { data: profiles, error } = await supabase
       .from("profiles")
       .select("*")
@@ -213,7 +192,6 @@ export class UserProfileController {
     }
     const profile = profiles[0] as UserProfile;
 
-    // 5. Get preferences
     const { data: preferencesArr, error: prefError } = await supabase
       .from("preferences")
       .select("*")
@@ -229,21 +207,16 @@ export class UserProfileController {
       profile,
       preferences:
         preferencesArr && preferencesArr.length > 0
-          ? preferencesArr[0] as UserPreferences
+          ? (preferencesArr[0] as UserPreferences)
           : null,
     };
   }
 
-  /**
-   * Update user, profile, and/or preferences
-   */
   async updateUser(req: UpdateUserRequest): Promise<void> {
     const user_id = req.id;
     if (!user_id) {
       throw new Error("--id is required");
     }
-
-    // Update profile fields if provided
     const profileFields: Partial<UserProfile> = {};
     const allowedProfileFields: (keyof UserProfile)[] = [
       "alias",
@@ -277,7 +250,6 @@ export class UserProfileController {
       }
     }
 
-    // Update preferences if provided
     const preferencesFields: Partial<UserPreferences> = {};
     const allowedPreferencesFields: (keyof UserPreferences)[] = [
       "min_age",
@@ -303,7 +275,6 @@ export class UserProfileController {
       }
     }
 
-    // Update user email if provided (optional, not joined in response)
     if (req.email) {
       const { error } = await supabase.auth.admin.updateUserById(user_id, {
         email: req.email,
@@ -314,16 +285,11 @@ export class UserProfileController {
     }
   }
 
-  /**
-   * Delete user, profile, and preferences
-   */
   async deleteUser(req: DeleteUserRequest): Promise<void> {
     const user_id = req.id;
     if (!user_id) {
       throw new Error("--id is required");
     }
-
-    // Delete preferences
     const { error: preferencesError } = await supabase
       .from("preferences")
       .delete()
@@ -333,8 +299,6 @@ export class UserProfileController {
         "Error deleting preferences: " + preferencesError.message
       );
     }
-
-    // Delete profile
     const { error: profileError } = await supabase
       .from("profiles")
       .delete()
@@ -342,18 +306,12 @@ export class UserProfileController {
     if (profileError) {
       throw new Error("Error deleting profile: " + profileError.message);
     }
-
-    // Delete user from auth
     const { error: userError } = await supabase.auth.admin.deleteUser(user_id);
     if (userError) {
       throw new Error("Error deleting user: " + userError.message);
     }
   }
 
-  // Profile service functions
-  /**
-   * Create a new profile and preferences.
-   */
   async createProfile(req: CreateProfileRequest): Promise<ProfileResponse> {
     const {
       user_id,
@@ -379,7 +337,6 @@ export class UserProfileController {
       throw new Error("--user_id is required");
     }
 
-    // 1. Create profile
     const profileFields: Partial<Profile> = {
       user_id,
       alias: alias ?? null,
@@ -409,7 +366,6 @@ export class UserProfileController {
 
     const profile = insertedProfiles[0] as Profile;
 
-    // 2. Create preferences
     const preferencesFields: ProfilePreferences = {
       user_id: profile.user_id,
       min_age: min_age ?? 18,
@@ -435,13 +391,8 @@ export class UserProfileController {
     };
   }
 
-  /**
-   * List profiles with preferences, paginated.
-   */
   async listProfiles(req: ListProfilesRequest): Promise<ProfileListResponse> {
     const { limit, offset } = req;
-
-    // 1. Get profiles with pagination
     const {
       data: profiles,
       error,
@@ -455,9 +406,8 @@ export class UserProfileController {
       throw new Error("Error listing profiles: " + error.message);
     }
 
-    // 2. For each profile, get preferences by profile id
     const profileResponses: ProfileResponse[] = await Promise.all(
-      (profiles || []).map(async (profile: Profile) => {
+      (profiles || []).map(async (profile: any) => {
         const { data: preferencesArr, error: prefError } = await supabase
           .from("preferences")
           .select("*")
@@ -470,10 +420,13 @@ export class UserProfileController {
 
         return {
           id: profile.id,
-          profile,
+          profile: {
+            ...profile,
+            secondary_images: profile.secondary_images,
+          } as Profile,
           preferences:
             preferencesArr && preferencesArr.length > 0
-              ? preferencesArr[0] as ProfilePreferences
+              ? preferencesArr[0]
               : null,
         };
       })
@@ -489,16 +442,11 @@ export class UserProfileController {
     };
   }
 
-  /**
-   * Get profile by id with preferences.
-   */
   async getProfile(req: GetProfileRequest): Promise<ProfileResponse> {
     const profile_id = req.id;
     if (!profile_id) {
       throw new Error("--id is required");
     }
-
-    // 1. Get profile
     const { data: profiles, error } = await supabase
       .from("profiles")
       .select("*")
@@ -512,7 +460,6 @@ export class UserProfileController {
     }
     const profile = profiles[0] as Profile;
 
-    // 2. Get preferences
     const { data: preferencesArr, error: prefError } = await supabase
       .from("preferences")
       .select("*")
@@ -527,22 +474,15 @@ export class UserProfileController {
       id: profile.id,
       profile,
       preferences:
-        preferencesArr && preferencesArr.length > 0
-          ? preferencesArr[0] as ProfilePreferences
-          : null,
+        preferencesArr && preferencesArr.length > 0 ? preferencesArr[0] : null,
     };
   }
 
-  /**
-   * Update profile and/or preferences by profile id.
-   */
   async updateProfile(req: UpdateProfileRequest): Promise<void> {
     const profile_id = req.id;
     if (!profile_id) {
       throw new Error("--id is required");
     }
-
-    // Update profile fields if provided
     const profileFields: Partial<Profile> = {};
     const allowedProfileFields: (keyof Profile)[] = [
       "alias",
@@ -576,7 +516,6 @@ export class UserProfileController {
       }
     }
 
-    // Update preferences if provided
     const preferencesFields: Partial<ProfilePreferences> = {};
     const allowedPreferencesFields: (keyof ProfilePreferences)[] = [
       "min_age",
@@ -603,16 +542,11 @@ export class UserProfileController {
     }
   }
 
-  /**
-   * Delete profile and preferences by profile id.
-   */
   async deleteProfile(req: DeleteProfileRequest): Promise<void> {
     const profile_id = req.id;
     if (!profile_id) {
       throw new Error("--id is required");
     }
-
-    // Delete preferences if user_id is provided
     if (req.user_id) {
       const { error: preferencesError } = await supabase
         .from("preferences")
@@ -624,8 +558,6 @@ export class UserProfileController {
         );
       }
     }
-
-    // Delete profile
     const { error: profileError } = await supabase
       .from("profiles")
       .delete()
@@ -635,65 +567,6 @@ export class UserProfileController {
     }
   }
 
-  /**
-   * List nearby profiles.
-   */
-  async listNearbyProfiles(req: {
-    user_id: string;
-    maxDistance?: number;
-  }): Promise<{ profiles: Profile[] }> {
-    const { user_id, maxDistance = 50.0 } = req;
-    if (!user_id) throw new Error('user_id is required for "nearby"');
-    const { data, error } = await supabase.rpc("nearby_profiles", {
-      user_id,
-      max_distance: maxDistance,
-    });
-    if (error)
-      throw new Error("Error fetching nearby profiles: " + error.message);
-    return { profiles: (data || []) as Profile[] };
-  }
-
-  /**
-   * List swipeable profiles.
-   */
-  async listNearbySwipeableProfiles(req: {
-    user_id: string;
-    maxDistance?: number;
-    count?: number;
-  }): Promise<SwipeableProfilesResponse> {
-    const { user_id, maxDistance = 50.0, count = 10 } = req;
-    if (!user_id) throw new Error('user_id is required for "swipeable"');
-    const { data, error } = await supabase.rpc("swipeable_profiles", {
-      user_id,
-      max_distance: maxDistance,
-      limit_count: count,
-    });
-    if (error)
-      throw new Error("Error fetching swipeable profiles: " + error.message);
-    return { profiles: (data || []) as SwipeableProfile[] };
-  }
-
-  /**
-   * List nearby matches.
-   */
-  async listNearbyMatches(req: {
-    user_id: string;
-    maxDistance?: number;
-  }): Promise<{ matches: any[] }> {
-    const { user_id, maxDistance = 200.0 } = req;
-    if (!user_id) throw new Error('user_id is required for "nearby-matches"');
-    const { data, error } = await supabase.rpc("nearby_matches", {
-      user_id,
-      max_distance: maxDistance,
-    });
-    if (error)
-      throw new Error("Error fetching nearby matches: " + error.message);
-    return { matches: data || [] };
-  }
-
-  /**
-   * Find a profile by email.
-   */
   async findByEmail(email: string): Promise<Profile | null> {
     const { data, error } = await supabase
       .from("profiles")
@@ -704,9 +577,6 @@ export class UserProfileController {
     return data[0] as Profile;
   }
 
-  /**
-   * Find a profile by alias.
-   */
   async findByAlias(alias: string): Promise<Profile | null> {
     const { data, error } = await supabase
       .from("profiles")
@@ -717,9 +587,6 @@ export class UserProfileController {
     return data[0] as Profile;
   }
 
-  /**
-   * Get preferences for a user.
-   */
   async getPreferences(userId: string): Promise<ProfilePreferences | null> {
     const { data, error } = await supabase
       .from("preferences")
@@ -730,10 +597,10 @@ export class UserProfileController {
     return data[0] as ProfilePreferences;
   }
 
-  /**
-   * Set preferences for a user.
-   */
-  async setPreferences(userId: string, preferences: ProfilePreferences): Promise<void> {
+  async setPreferences(
+    userId: string,
+    preferences: ProfilePreferences
+  ): Promise<void> {
     const { error } = await supabase
       .from("preferences")
       .update(preferences)
@@ -741,24 +608,23 @@ export class UserProfileController {
     if (error) throw new Error("Error updating preferences: " + error.message);
   }
 
-  /**
-   * Update user location.
-   */
   async updateLocation(
     userId: string,
     latitude: number,
-    longitude: number
+    longitude: number,
+    address?: string
   ): Promise<void> {
+    const updateFields: Partial<Profile> = { latitude, longitude };
+    if (address !== undefined) {
+      updateFields.address = address;
+    }
     const { error } = await supabase
       .from("profiles")
-      .update({ latitude, longitude })
+      .update(updateFields)
       .eq("user_id", userId);
     if (error) throw new Error("Error updating location: " + error.message);
   }
 
-  /**
-   * Block a user.
-   */
   async blockUser(blockerId: string, blockedId: string): Promise<void> {
     const { error } = await supabase
       .from("blocks")
@@ -766,9 +632,6 @@ export class UserProfileController {
     if (error) throw new Error("Error blocking user: " + error.message);
   }
 
-  /**
-   * Report a user.
-   */
   async reportUser(
     reporterId: string,
     reportedId: string,
@@ -783,9 +646,6 @@ export class UserProfileController {
     if (error) throw new Error("Error reporting user: " + error.message);
   }
 
-  /**
-   * Set user online.
-   */
   async setOnline(userId: string): Promise<void> {
     const { error } = await supabase
       .from("profiles")
@@ -794,14 +654,84 @@ export class UserProfileController {
     if (error) throw new Error("Error setting user online: " + error.message);
   }
 
-  /**
-   * Set user offline.
-   */
   async setOffline(userId: string): Promise<void> {
     const { error } = await supabase
       .from("profiles")
       .update({ is_online: false })
       .eq("user_id", userId);
     if (error) throw new Error("Error setting user offline: " + error.message);
+  }
+
+  /**
+   * List nearby profiles (geo).
+   */
+  async listNearbyProfiles(
+    userId: string,
+    maxDistance: number
+  ): Promise<Profile[]> {
+    if (!userId) throw new Error("userId is required");
+    const { data, error } = await supabase.rpc("nearby_profiles", {
+      user_id: userId,
+      max_distance: maxDistance,
+    });
+    if (error)
+      throw new Error("Error fetching nearby profiles: " + error.message);
+    return (data || []) as Profile[];
+  }
+
+  /**
+   * List swipeable profiles (geo).
+   */
+  async listNearbySwipeableProfiles(
+    userId: string,
+    maxDistance: number,
+    limit: number
+  ): Promise<Profile[]> {
+    if (!userId) throw new Error("userId is required");
+    const { data, error } = await supabase.rpc("swipeable_profiles", {
+      user_id: userId,
+      max_distance: maxDistance,
+      limit_count: limit,
+    });
+    if (error)
+      throw new Error("Error fetching swipeable profiles: " + error.message);
+    return (data || []) as Profile[];
+  }
+
+  /**
+   * List nearby matches (geo).
+   */
+  async listNearbyMatches(
+    userId: string,
+    maxDistance: number
+  ): Promise<Match[]> {
+    if (!userId) throw new Error("userId is required");
+    const { data, error } = await supabase.rpc("nearby_matches", {
+      user_id: userId,
+      max_distance: maxDistance,
+    });
+    if (error)
+      throw new Error("Error fetching nearby matches: " + error.message);
+    return (data || []) as Match[];
+  }
+
+  /**
+   * Update my location (geo).
+   */
+  async updateMyLocation(
+    userId: string,
+    latitude: number,
+    longitude: number
+  ): Promise<void> {
+    if (!userId) throw new Error("userId is required");
+    if (typeof latitude !== "number" || typeof longitude !== "number") {
+      throw new Error("latitude and longitude must be numbers");
+    }
+    const { error } = await supabase.rpc("update_my_location", {
+      user_id: userId,
+      latitude,
+      longitude,
+    });
+    if (error) throw new Error("Error updating geo location: " + error.message);
   }
 }
