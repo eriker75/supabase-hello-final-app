@@ -1,7 +1,7 @@
-import CustomInputDate from "@/components/elements/CustomInputDate";
-import CustomInputText from "@/components/elements/CustomInputText";
-import CustomInputTextarea from "@/components/elements/CustomInputTextarea";
-import CustomRadioButton from "@/components/elements/CustomRadioButton";
+import CustomInputDate from "@/components/forms/CustomInputDate";
+import CustomInputText from "@/components/forms/CustomInputText";
+import CustomInputTextarea from "@/components/forms/CustomInputTextarea";
+import CustomRadioButton from "@/components/forms/CustomRadioButton";
 import { OnboardingScreenLayout } from "@/components/layouts/OnboardingScreenLayout";
 import { HStack, Text, VStack } from "@/components/ui";
 import { GENDER_TYPES } from "@/src/definitions/constants/GENDER_TYPES";
@@ -13,22 +13,22 @@ import { useEffect, useState } from "react";
 import { Alert, ScrollView } from "react-native";
 
 const BasicInfoScreen = () => {
-  // Use correct onboarding store selectors
   const alias = useOnboardingStore((state) => state.alias);
-  const setAlias = useOnboardingStore((state) => state.setAlias);
   const birthDate = useOnboardingStore((state) => state.birthDate);
-  const setBirthDate = useOnboardingStore((state) => state.setBirthDate);
   const biography = useOnboardingStore((state) => state.biography);
-  const setBiography = useOnboardingStore((state) => state.setBiography);
   const gender = useOnboardingStore((state) => state.gender);
-  const setGender = useOnboardingStore((state) => state.setGender);
   const genderInterests = useOnboardingStore((state) => state.genderInterests);
-  const setGenderInterests = useOnboardingStore((state) => state.setGenderInterests);
+  const setAlias = useOnboardingStore((state) => state.setAlias);
+  const setBirthDate = useOnboardingStore((state) => state.setBirthDate);
+  const setBiography = useOnboardingStore((state) => state.setBiography);
+  const setGender = useOnboardingStore((state) => state.setGender);
+  const setGenderInterests = useOnboardingStore(
+    (state) => state.setGenderInterests
+  );
 
   const [isValidStep, setIsValidStep] = useState(false);
 
   const handleGenderSelect = (value: string | number) => {
-    // Ensure value is a number for the store
     setGender(typeof value === "string" ? Number(value) : value);
   };
 
