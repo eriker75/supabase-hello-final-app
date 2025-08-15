@@ -81,3 +81,9 @@ See [`2025-08-14-refactor-datasource-abstract-classes.md`](2025-08-14-refactor-d
 - Ahora la validación del paso usa el helper `validateOnboardingStep` de `src/utils/validateOnboardingStep.ts`.
 - Se ajustó la lógica de redirección para usar la propiedad booleana `isOnboarded` del store de autenticación.
 - Documentado el proceso y plan en [`2025-08-15-refactor-onboarding-index-store-usage.md`](./2025-08-15-refactor-onboarding-index-store-usage.md).
+
+## 2025-08-15 - Eliminación de dotenv del runtime de Expo/React Native
+
+- Se eliminó la importación y uso de `dotenv` en `app/_layout.tsx` porque Expo/React Native no soporta módulos core de Node.js como `path`, requerido por `dotenv`.
+- No se detectó uso de variables de entorno en tiempo de ejecución en ese archivo, por lo que no fue necesario migrar lógica adicional.
+- Documentado el proceso y plan en [`2025-08-15-remove-dotenv-from-runtime.md`](./2025-08-15-remove-dotenv-from-runtime.md).

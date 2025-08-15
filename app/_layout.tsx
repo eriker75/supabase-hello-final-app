@@ -16,6 +16,7 @@ import "react-native-reanimated";
 import { RealtimeChatGateway } from "../src/infraestructure/gateways/RealtimeChatGateway";
 import { RealtimeChatHandler } from "../src/infraestructure/handlers/RealtimeChatHandlers";
 
+
 const queryClient = new QueryClient();
 SplashScreen.preventAutoHideAsync();
 

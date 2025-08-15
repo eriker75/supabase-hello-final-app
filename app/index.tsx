@@ -1,11 +1,12 @@
-import { useAuthUserProfile } from "@/src/modules/users/hooks/useAuthUserProfile";
+import { useAuthUserProfileStore } from "@/src/presentation/stores/auth-user-profile.store";
 import { Redirect } from "expo-router";
 import React from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 export default function Index() {
-  const { userProfile, isAuthenticated, isLoading, error } =
-    useAuthUserProfile();
+  const isLoading = useAuthUserProfileStore((s) => s.isLoading);
+  const isAuthenticated = useAuthUserProfileStore((s) => s.isAuthenticated);
+  const isOnboarded = useAuthUserProfileStore((s) => s.isOnboarded);
 
   if (isLoading) {
     return (
@@ -16,18 +17,8 @@ export default function Index() {
     );
   }
 
-  if (error) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.message}>
-          Ocurrió un error: {error.message || "desconocido"}
-        </Text>
-      </View>
-    );
-  }
-
   if (isAuthenticated) {
-    if (userProfile?.is_onboarded) {
+    if (isOnboarded) {
       return <Redirect href="/dashboard/radar" />;
     } else {
       return <Redirect href="/onboarding" />;

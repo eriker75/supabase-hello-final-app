@@ -8,30 +8,42 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import axios from "axios";
 
 // S3/Supabase Storage config from env
-const SUPABASE_S3_ENDPOINT = process.env.SUPABASE_S3_ENDPOINT;
-const SUPABASE_S3_ACCESS_KEY_ID = process.env.SUPABASE_S3_ACCESS_KEY_ID;
-const SUPABASE_S3_SECRET_ACCESS_KEY = process.env.SUPABASE_S3_SECRET_ACCESS_KEY;
-const SUPABASE_S3_BUCKET_NAME = process.env.SUPABASE_S3_BUCKET_NAME;
-const SUPABASE_S3_REGION = process.env.SUPABASE_S3_REGION || "us-east-1";
-
-if (
-  !SUPABASE_S3_ENDPOINT ||
-  !SUPABASE_S3_ACCESS_KEY_ID ||
-  !SUPABASE_S3_SECRET_ACCESS_KEY ||
-  !SUPABASE_S3_BUCKET_NAME
-) {
-  throw new Error("Missing Supabase S3 storage environment variables");
+function getS3Config() {
+  return {
+    endpoint: process.env.SUPABASE_S3_ENDPOINT,
+    accessKeyId: process.env.SUPABASE_S3_ACCESS_KEY_ID,
+    secretAccessKey: process.env.SUPABASE_S3_SECRET_ACCESS_KEY,
+    bucket: process.env.SUPABASE_S3_BUCKET_NAME,
+    region: process.env.SUPABASE_S3_REGION || "us-east-1",
+  };
 }
 
-const s3Client = new S3Client({
-  region: SUPABASE_S3_REGION,
-  endpoint: SUPABASE_S3_ENDPOINT,
-  credentials: {
-    accessKeyId: SUPABASE_S3_ACCESS_KEY_ID,
-    secretAccessKey: SUPABASE_S3_SECRET_ACCESS_KEY,
-  },
-  forcePathStyle: true,
-});
+function getS3Client() {
+  const {
+    endpoint,
+    accessKeyId,
+    secretAccessKey,
+    bucket,
+    region,
+  } = getS3Config();
+
+  if (!endpoint || !accessKeyId || !secretAccessKey || !bucket) {
+    throw new Error("Missing Supabase S3 storage environment variables");
+  }
+
+  return {
+    s3Client: new S3Client({
+      region,
+      endpoint,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+      },
+      forcePathStyle: true,
+    }),
+    bucket,
+  };
+}
 
 /**
  * Upload a file buffer to Supabase S3 storage.
@@ -45,8 +57,9 @@ export async function uploadFile(
   key: string,
   mimeType: string
 ): Promise<string> {
+  const { s3Client, bucket } = getS3Client();
   const command = new PutObjectCommand({
-    Bucket: SUPABASE_S3_BUCKET_NAME,
+    Bucket: bucket,
     Key: key,
     Body: buffer,
     ContentType: mimeType,
@@ -65,8 +78,9 @@ export async function getSignedUrlForKey(
   key: string,
   expiresInSeconds = 3600
 ): Promise<string> {
+  const { s3Client, bucket } = getS3Client();
   const command = new GetObjectCommand({
-    Bucket: SUPABASE_S3_BUCKET_NAME,
+    Bucket: bucket,
     Key: key,
   });
   return getSignedUrl(s3Client, command, { expiresIn: expiresInSeconds });
@@ -77,8 +91,9 @@ export async function getSignedUrlForKey(
  * @param key S3 object key
  */
 export async function deleteFile(key: string): Promise<void> {
+  const { s3Client, bucket } = getS3Client();
   const command = new DeleteObjectCommand({
-    Bucket: SUPABASE_S3_BUCKET_NAME,
+    Bucket: bucket,
     Key: key,
   });
   await s3Client.send(command);

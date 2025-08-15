@@ -1,9 +1,10 @@
 import { OnboardingScreenLayout } from "@/components/layouts/OnboardingScreenLayout";
 import { LocationPermissionStatuses } from "@/src/definitions/enums/LocationPermissionStatuses.enum";
-import { useOnboardingStore } from "@/src/modules/onboarding/onboarding.store";
-import { useUpdateProfile } from "@/src/modules/users/services/profile.service";
-import { useAuthUserProfileStore } from "@/src/modules/users/stores/auth-user-profile.store";
+import { useOnboardUserService } from "@/src/infraestructure/services/OnboardingService";
+import { useAuthUserProfileStore } from "@/src/presentation/stores/auth-user-profile.store";
+import { useOnboardingStore } from "@/src/presentation/stores/onboarding.store";
 import { requestLocationPermission } from "@/src/utils/location";
+import { getSignedUrlForKey, uploadFile } from "@/src/utils/supabaseS3Storage";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 import { Alert, Dimensions, Image, Text, View } from "react-native";
@@ -12,33 +13,17 @@ const LocationImg = require("@/assets/images/location-img.png");
 
 const AllowLocationScreen = () => {
   const screenHeight = Dimensions.get("window").height;
-
-  const validateCurrentStep = useOnboardingStore(
-    (state) => state.validateCurrentStep
+  const onboardingStore = useOnboardingStore();
+  const setSelectedLocation = useOnboardingStore((s) => s.setSelectedLocation);
+  const userEmail = useAuthUserProfileStore(
+    (s: any) => s.email || s.userId || ""
   );
-  const submitOnboarding = useOnboardingStore(
-    (state) => state.submitOnboarding
-  );
-  const setSelectedLocation = useOnboardingStore(
-    (state) => state.setSelectedLocation
-  );
-
-  const setCurrentLocation = useAuthUserProfileStore(
-    (state) => state.setCurrentLocation
-  );
-  const updateUserProfileStore = useAuthUserProfileStore(
-    (state) => state.updateUserProfile
-  );
-  const userId = useAuthUserProfileStore((state) => state.userProfile?.id);
-
-  const store = useOnboardingStore();
-  const updateProfileMutation = useUpdateProfile(userId!);
+  const { mutate, isPending } = useOnboardUserService();
 
   const selectMyCurrentLocationAndContinue = async () => {
     try {
-      // Paso 1: Validar permisos
+      // 1. Solicitar permisos de ubicación
       const permissionStatus = await requestLocationPermission();
-
       if (permissionStatus !== LocationPermissionStatuses.GRANTED) {
         Alert.alert(
           "Permisos requeridos",
@@ -47,56 +32,60 @@ const AllowLocationScreen = () => {
         return;
       }
 
-      // Paso 2: Obtener ubicación actual
+      // 2. Obtener ubicación actual
       const location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
-
-      // Actualizar estados locales
-      setCurrentLocation({ latitude, longitude });
       setSelectedLocation("Ubicación actual", { latitude, longitude });
 
-      // Paso 3: Validar paso
-      const isValid = await validateCurrentStep(4);
-      if (!isValid) {
-        Alert.alert(
-          "Locación inválida",
-          "Por favor seleccione una locación válida"
+      // 3. Subir imágenes a S3 y obtener URLs firmadas
+      let mainPictureUrl = onboardingStore.mainPicture;
+      if (mainPictureUrl && !mainPictureUrl.startsWith("https://")) {
+        // Asumimos que es un URI local, subir a S3
+        const mainPicBuffer = await fetch(mainPictureUrl).then((res) =>
+          res.arrayBuffer()
         );
-        return;
+        const mainPicKey = `users/${Date.now()}-main.jpg`;
+        await uploadFile(Buffer.from(mainPicBuffer), mainPicKey, "image/jpeg");
+        mainPictureUrl = await getSignedUrlForKey(mainPicKey, 24 * 3600);
       }
 
-      // Paso 4: Llamada real para actualizar perfil en supabase
-      await updateProfileMutation.mutateAsync({
-        alias: store.alias,
-        bio: store.bio,
-        interested_in: store.interestedIn,
-        avatar: store.mainPicture,
-        address: store.selectedAddress,
-        location: JSON.stringify({ latitude, longitude }),
+      const secondaryImagesUrls: string[] = [];
+      for (const [i, img] of onboardingStore.secondaryImages.entries()) {
+        if (img && !img.startsWith("https://")) {
+          const imgBuffer = await fetch(img).then((res) => res.arrayBuffer());
+          const imgKey = `users/${Date.now()}-secondary-${i}.jpg`;
+          await uploadFile(Buffer.from(imgBuffer), imgKey, "image/jpeg");
+          const url = await getSignedUrlForKey(imgKey, 24 * 3600);
+          secondaryImagesUrls.push(url);
+        } else if (img) {
+          secondaryImagesUrls.push(img);
+        }
+      }
+
+      // 4. Actualizar el store con las URLs de S3
+      onboardingStore.setMainPicture(mainPictureUrl);
+      onboardingStore.setSecondaryImages(secondaryImagesUrls);
+
+      // 5. Llamar al servicio de onboarding para guardar los datos
+      mutate({
+        ...onboardingStore,
         latitude,
         longitude,
-        is_onboarded: 1,
-      });
-
-      console.log(updateProfileMutation.data);
-
-      // Paso 5: Reflejar en el store local del perfil
-      updateUserProfileStore({
-        latitude,
-        longitude,
-        location: JSON.stringify({ latitude, longitude }),
+        avatar: mainPictureUrl,
+        secondary_images: secondaryImagesUrls,
         address: "Ubicación actual",
-        alias: store.alias,
+        is_onboarded: true,
+        email: userEmail,
+        password: "", // Not needed for social login, but required by type
       });
 
-      // Paso 6: Continuar con el onboarding
-      await submitOnboarding();
+      // 6. Redirigir al dashboard
       router.push("/dashboard/swipe");
     } catch (error) {
-      console.error("Error en ubicación:", error);
+      console.error("Error en ubicación/onboarding:", error);
       Alert.alert(
         "Error",
-        "Ocurrió un problema al obtener tu ubicación. Por favor intenta nuevamente."
+        "Ocurrió un problema al obtener tu ubicación o guardar tu información. Por favor intenta nuevamente."
       );
     }
   };
@@ -107,7 +96,7 @@ const AllowLocationScreen = () => {
       progressValue={100}
       showBackButton
       isStepValidated={true}
-      footerButtonText="Activar ubicación"
+      footerButtonText={isPending ? "Guardando..." : "Activar ubicación"}
       onFooterButtonPress={selectMyCurrentLocationAndContinue}
     >
       <View className="flex-1 pb-10 gap-10 items-center">
