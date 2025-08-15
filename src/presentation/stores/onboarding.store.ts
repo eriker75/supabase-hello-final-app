@@ -1,7 +1,6 @@
 import { create, StateCreator } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
-import type { Location } from "../../definitions/ineterfaces/Location.interface";
 import { zustandAsyncStorage } from "../../utils/zustandAsyncStorage";
 
 export interface OnboardingState {
@@ -20,8 +19,6 @@ export interface OnboardingState {
   longitude: string;
   mainPicture: string;
   secondaryImages: string[];
-  selectedAddress: string;
-  selectedLocation: Location | null;
 }
 
 export interface OnboardingActions {
@@ -44,8 +41,6 @@ export interface OnboardingActions {
   setSecondaryImages: (secondaryImages: string[]) => void;
   addSecondaryImage: (image: string) => void;
   removeSecondaryImage: (image: string) => void;
-  setSelectedLocation: (address: string, location: Location | null) => void;
-  clearSelectedLocation: () => void;
   reset: () => void;
   setOnboarding: (payload: Partial<OnboardingState>) => void;
   setOnboardingProperty: <K extends keyof OnboardingState>(
@@ -72,8 +67,6 @@ const initialState: OnboardingState = {
   longitude: "",
   mainPicture: "",
   secondaryImages: [],
-  selectedAddress: "",
-  selectedLocation: null,
 };
 
 const onboardingStoreCreator: StateCreator<
@@ -166,16 +159,6 @@ const onboardingStoreCreator: StateCreator<
         (img) => img !== image
       );
     }),
-  setSelectedLocation: (address, location) =>
-    set((state) => {
-      state.selectedAddress = address;
-      state.selectedLocation = location;
-    }),
-  clearSelectedLocation: () =>
-    set((state) => {
-      state.selectedAddress = "";
-      state.selectedLocation = null;
-    }),
   reset: () => set(() => ({ ...initialState })),
   setOnboarding: (payload) =>
     set((state) => {
@@ -208,8 +191,6 @@ export const useOnboardingStore = create<OnboardingStore>()(
         longitude,
         mainPicture,
         secondaryImages,
-        selectedAddress,
-        selectedLocation,
       } = state;
       return {
         name,
@@ -227,8 +208,6 @@ export const useOnboardingStore = create<OnboardingStore>()(
         longitude,
         mainPicture,
         secondaryImages,
-        selectedAddress,
-        selectedLocation,
       };
     },
   })

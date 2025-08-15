@@ -1,8 +1,7 @@
 import { Profile } from "./profile";
 
 export interface OnboardUserRequest {
-  email: string;
-  password: string;
+  user_id: string; // UUID del usuario autenticado
   alias: string;
   gender: number;
   avatar?: string;

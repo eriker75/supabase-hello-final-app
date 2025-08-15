@@ -18,7 +18,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useUserChatsService } from "@/src/infraestructure/services/ChatService";
+import { useUserChatsService } from "@/src/presentation/services/ChatService";
 import { useAuthUserProfileStore } from "@/src/presentation/stores/auth-user-profile.store";
 const ChatsNotFound = require("@/assets/images/ChatsNotFound.png");
 
@@ -82,7 +82,9 @@ const ChatListItem = ({
         >
           <Text style={{ fontWeight: "bold", fontSize: 16 }}>{name}</Text>
           <Text style={{ color: "#b0b0b0", fontSize: 12 }}>
-            {formatMessageTime(time)}
+            {time && !isNaN(new Date(time).getTime())
+              ? formatMessageTime(time)
+              : "—"}
           </Text>
         </HStack>
         <HStack style={{ alignItems: "center", marginTop: 2 }}>
@@ -130,6 +132,18 @@ const ChatScreen = () => {
   const { userId, avatar, isLoading: isUserLoading } = useAuthUserProfileStore();
 
   const { data: chats, isLoading, error } = useUserChatsService(userId || "");
+
+  // Debug: Log chat IDs to check for missing/duplicate keys
+  if (__DEV__ && Array.isArray(chats)) {
+    const ids = chats.map((c: any) => c?.chatId);
+    const uniqueIds = new Set(ids);
+    if (ids.length !== uniqueIds.size) {
+      console.warn("[ChatList] Duplicate chatId(s) detected:", ids);
+    }
+    if (ids.some((id) => !id)) {
+      console.warn("[ChatList] Missing chatId(s) in chats:", chats);
+    }
+  }
 
   const handleChatPress = (id: string) => {
     // Use object navigation if supported by Expo Router, otherwise fallback to any
@@ -221,7 +235,19 @@ const ChatScreen = () => {
       ) : (
         <FlatList
           data={chats}
-          keyExtractor={(chat: any) => chat.chatId}
+          keyExtractor={(chat: any, index: number) => {
+            if (!chat.id) {
+              if (__DEV__) {
+                console.warn(
+                  `[ChatList] Missing id for chat at index ${index}:`,
+                  chat
+                );
+              }
+              // Fallback to index as key (not ideal, but prevents React warning)
+              return `fallback-key-${index}`;
+            }
+            return chat.id;
+          }}
           renderItem={({ item: chat }: { item: any }) => {
             // You may want to adapt this logic if you need to show group/individual avatars/names
             const name = chat.chatDescription || "Chat";
@@ -236,7 +262,7 @@ const ChatScreen = () => {
 
             return (
               <ChatListItem
-                id={chat.chatId}
+                id={chat.id}
                 name={name}
                 avatar={avatar}
                 loading={false}

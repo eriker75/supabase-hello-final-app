@@ -1,6 +1,6 @@
 import { Avatar, AvatarBadge, AvatarImage } from "@/components/ui";
 import { Text } from "@/components/ui/text";
-import { useGetUserProfileByUserIdService } from "@/src/infraestructure/services/UserProfileService";
+import { useGetUserProfileByUserIdService } from "@/src/presentation/services/UserProfileService";
 import { useAuthUserProfileStore } from "@/src/presentation/stores/auth-user-profile.store";
 import React, { useRef, useState } from "react";
 import {

@@ -13,6 +13,7 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import { AppState, Platform, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import 'react-native-get-random-values';
 import "react-native-reanimated";
 import { RealtimeChatGateway } from "../src/infraestructure/gateways/RealtimeChatGateway";
 import { RealtimeChatHandler } from "../src/infraestructure/handlers/RealtimeChatHandlers";

@@ -63,3 +63,39 @@ export function toDomainUserProfileList(
 ): UserProfileEntity[] {
   return responses.map(toDomainUserProfile);
 }
+/**
+ * Maps a UserProfileEntity to a NearbySwipeableProfile for the swipeable profiles store.
+ */
+import { NearbySwipeableProfile } from "@/src/presentation/stores/nearby-swipeable-profiles.store";
+
+export function toNearbySwipeableProfile(entity: UserProfileEntity): NearbySwipeableProfile {
+  return {
+    userId: entity.userId,
+    profileId: entity.id,
+    biography: entity.biography ?? "",
+    birthDay: entity.birthDate ? entity.birthDate.toISOString() : "",
+    distanceInKm: "", // If available, map here
+    age: entity.birthDate
+      ? Math.floor(
+          (Date.now() - new Date(entity.birthDate).getTime()) /
+            (365.25 * 24 * 60 * 60 * 1000)
+        )
+      : 0,
+    gender: entity.gender ?? 0,
+    genderInterests: entity.genderInterests ?? [],
+    minAgePreference: entity.preferences?.minAge ?? 18,
+    maxAgePreference: entity.preferences?.maxAge ?? 98,
+    maxDistancePreference: entity.preferences?.maxDistance ?? 200,
+    alias: entity.alias ?? "",
+    name: entity.name ?? "",
+    avatar: entity.avatar ?? "",
+    address: entity.address ?? "",
+    latitude: entity.latitude?.toString() ?? "",
+    longitude: entity.longitude?.toString() ?? "",
+    secondaryImages: entity.secondaryImages ?? [],
+    isOnline: false,
+    isActive: entity.isActive ?? false,
+    isOnboarded: entity.isOnboarded ?? false,
+    lastOnline: entity.lastOnline ? entity.lastOnline.toISOString() : "",
+  };
+}

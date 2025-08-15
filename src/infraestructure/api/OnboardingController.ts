@@ -14,8 +14,6 @@ export class OnboardingController {
    */
   async onboardUser(req: OnboardUserRequest): Promise<OnboardUserResponse> {
     const {
-      email,
-      password,
       alias,
       gender,
       avatar,
@@ -34,12 +32,19 @@ export class OnboardingController {
       genders = [1, 2, 3],
     } = req;
 
-    if (!email || !password || !alias || gender === undefined) {
-      throw new Error("--email, --password, --alias, and --gender are required");
+    // Solo requerir email y password si el usuario NO está autenticado (ajusta según tu lógica real)
+    if (!alias || gender === undefined) {
+      throw new Error("--alias and --gender are required");
     }
+    // Si tu lógica requiere preferencias, puedes agregar:
+    // if (!min_age || !max_age) throw new Error("--min_age and --max_age are required");
 
     // Simulate user creation/authentication and get user_id
-    const user_id = "mocked-user-id"; // Replace with actual user creation/auth logic
+    // Usar el user_id recibido en el request (validar que sea un UUID válido)
+    const user_id = req.user_id;
+    if (!user_id || typeof user_id !== "string" || user_id.length < 10) {
+      throw new Error("user_id inválido o ausente en el request de onboarding");
+    }
 
     // Check if profile already exists
     const { data: existingProfiles, error: checkError } = await supabase
@@ -179,8 +184,8 @@ export class OnboardingController {
       latitude: latitude ?? null,
       longitude: longitude ?? null,
       address: address || null,
-      last_online: null,
-      is_online: null,
+      last_online: new Date().toISOString(),
+      is_online: false,
       location: null,
       secondary_images: secondary_images || null,
     };

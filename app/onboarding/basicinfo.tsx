@@ -33,9 +33,9 @@ const BasicInfoScreen = () => {
 
   // Map gender number to string enum for form default
   let genderStr = "";
-  if (gender === 0) genderStr = GENDER_TYPES.MALE;
-  else if (gender === 1) genderStr = GENDER_TYPES.FEMALE;
-  else if (gender === 2) genderStr = GENDER_TYPES.OTHER;
+  if (gender === 1) genderStr = GENDER_TYPES.MALE;
+  else if (gender === 2) genderStr = GENDER_TYPES.FEMALE;
+  else if (gender === 3) genderStr = GENDER_TYPES.OTHER;
 
   const {
     control,
@@ -62,9 +62,9 @@ const BasicInfoScreen = () => {
       if (name === "birth_date") setBirthDate(value.birth_date || "");
       if (name === "bio") setBiography(value.bio || "");
       if (name === "gender") {
-        if (value.gender === GENDER_TYPES.MALE) setGender(0);
-        else if (value.gender === GENDER_TYPES.FEMALE) setGender(1);
-        else if (value.gender === GENDER_TYPES.OTHER) setGender(2);
+        if (value.gender === GENDER_TYPES.MALE) setGender(1);
+        else if (value.gender === GENDER_TYPES.FEMALE) setGender(2);
+        else if (value.gender === GENDER_TYPES.OTHER) setGender(3);
       }
       if (name === "interestedIn") setGenderInterests(
         (value.interestedIn || []) as string[]

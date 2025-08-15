@@ -2,7 +2,7 @@ import GoogleLogo from "@/assets/images/GoogleLogo.svg";
 import { Box } from "@/components/ui/box";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
-import { useGoogleLogin } from "@/src/presentation/hooks/useGoogleLogin";
+import { useGoogleAuth } from "@/src/presentation/hooks/useGoogleAuth";
 import { useAuthUserProfileStore } from "@/src/presentation/stores/auth-user-profile.store";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -16,7 +16,7 @@ const Login = () => {
     signIn: signInWithGoogle,
     isLoading: isLoadingGoogleLogin,
     error: googleError,
-  } = useGoogleLogin();
+  } = useGoogleAuth();
 
   const userProfile = useAuthUserProfileStore((state) => state);
 
@@ -27,7 +27,7 @@ const Login = () => {
         if (userProfile?.isOnboarded) {
           router.push("/dashboard/radar");
         } else {
-          router.push("/onboarding/index");
+          router.push("/onboarding");
         }
       }, 100);
     }

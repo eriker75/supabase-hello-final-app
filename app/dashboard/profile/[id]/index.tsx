@@ -1,6 +1,6 @@
 import { Avatar, AvatarBadge, AvatarImage } from "@/components/ui";
 import { Text } from "@/components/ui/text";
-import { useGetUserProfileByIdService } from "@/src/infraestructure/services/UserProfileService";
+import { useGetUserProfileByIdService } from "@/src/presentation/services/UserProfileService";
 import { currentUserProfileStore } from "@/src/presentation/stores/current-user-profile.store";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";

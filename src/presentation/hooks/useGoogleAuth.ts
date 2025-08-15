@@ -5,9 +5,9 @@ import {
   isSuccessResponse,
   statusCodes,
 } from "@react-native-google-signin/google-signin";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useAuthUserProfileStore } from "../stores/auth-user-profile.store";
-import { useLogout } from "./useLogout";
 
 if (!process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID) {
   throw new Error("Not GOOGLE_CLIENT_ID Found in env variables");
@@ -17,72 +17,57 @@ GoogleSignin.configure({
   webClientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
 });
 
-export const useGoogleLogin = () => {
+export const useGoogleAuth = () => {
   const setProfile = useAuthUserProfileStore((state) => state.setProfile);
   const resetProfile = useAuthUserProfileStore((state) => state.resetProfile);
   const setLoading = useAuthUserProfileStore((state) => state.setLoading);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { logout } = useLogout();
+  const router = useRouter();
 
   const signIn = async () => {
-    console.log("[GoogleLogin] signIn called");
     setIsLoading(true);
     setLoading(true);
     setError(null);
 
     try {
-      console.log("[GoogleLogin] Checking Play Services...");
       await GoogleSignin.hasPlayServices();
-      console.log("[GoogleLogin] Play Services available, calling GoogleSignin.signIn()");
       const response = await GoogleSignin.signIn();
-      console.log("[GoogleLogin] GoogleSignin.signIn() response:", response);
 
       if (!isSuccessResponse(response) || !response.data.idToken) {
-        console.log("[GoogleLogin] Invalid Google response or missing idToken", response);
         throw new Error("No se pudo obtener el token de Google");
       }
 
-      console.log("[GoogleLogin] Calling supabase.auth.signInWithIdToken with idToken:", response.data.idToken);
       const { data: authData, error: supabaseError } =
         await supabase.auth.signInWithIdToken({
           provider: "google",
           token: response.data.idToken,
         });
-      console.log("[GoogleLogin] Supabase signInWithIdToken result:", { authData, supabaseError });
 
       if (supabaseError || !authData.user) {
-        console.log("[GoogleLogin] Supabase error or missing user", supabaseError, authData);
         throw new Error(
           supabaseError?.message || "Error en la autenticación con Supabase"
         );
       }
 
-      console.log("[GoogleLogin] Fetching user from supabase.auth.getUser()");
       const {
         data: { user: userData },
       } = await supabase.auth.getUser();
-      console.log("[GoogleLogin] supabase.auth.getUser() result:", userData);
 
       if (!userData) {
-        console.log("[GoogleLogin] No userData found");
         throw new Error("Usuario no encontrado");
       }
 
-      console.log("[GoogleLogin] Fetching profile from Supabase...");
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", userData.id)
         .single();
-      console.log("[GoogleLogin] Profile fetch result:", { profileData, profileError });
 
       if (profileError) {
-        console.log("[GoogleLogin] Profile error", profileError);
         throw new Error("No se pudo obtener el perfil del usuario");
       }
 
-      // Map Supabase/Google data to AuthUserProfileState
       const userProfile = {
         userId: userData.id,
         profileId: profileData?.id || "",
@@ -115,14 +100,11 @@ export const useGoogleLogin = () => {
         refreshToken: authData.session?.refresh_token || "",
       };
 
-      console.log("[GoogleLogin] Setting user profile:", userProfile);
       setProfile(userProfile);
       setLoading(false);
       setIsLoading(false);
-      console.log("[GoogleLogin] Login flow completed successfully");
       return true;
     } catch (error) {
-      console.log("[GoogleLogin] Error in signIn:", error);
       setLoading(false);
       setIsLoading(false);
 
@@ -148,6 +130,33 @@ export const useGoogleLogin = () => {
       }
       resetProfile();
       return false;
+    }
+  };
+
+  const logout = async () => {
+    setError(null);
+    setLoading(true);
+    setIsLoading(true);
+    try {
+      // Sign out from Supabase
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) {
+        setError(signOutError.message);
+        setLoading(false);
+        setIsLoading(false);
+        return;
+      }
+      // Sign out from Google
+      await GoogleSignin.signOut();
+      // Clean the store
+      resetProfile();
+      // Redirect to login
+      router.replace("/login");
+    } catch (err: any) {
+      setError(err?.message || "Unknown error");
+    } finally {
+      setLoading(false);
+      setIsLoading(false);
     }
   };
 

@@ -114,18 +114,6 @@ export function useRemoveSecondaryImage() {
   return useCallback(removeSecondaryImage, [removeSecondaryImage]);
 }
 
-export function useSetSelectedLocation() {
-  const setSelectedLocation = useOnboardingStore((s) => s.setSelectedLocation);
-  return useCallback(setSelectedLocation, [setSelectedLocation]);
-}
-
-export function useClearSelectedLocation() {
-  const clearSelectedLocation = useOnboardingStore(
-    (s) => s.clearSelectedLocation
-  );
-  return useCallback(clearSelectedLocation, [clearSelectedLocation]);
-}
-
 export function useResetOnboarding() {
   const reset = useOnboardingStore((s) => s.reset);
   return useCallback(reset, [reset]);
@@ -203,5 +191,5 @@ export function useOnboardUserService() {
     [mutate, reset, onboardingState, setAuthUserProfile]
   );
 
-  return { ...rest, mutate: onboardUser };
+  return { ...rest, mutate: onboardUser, error: mutation.error };
 }

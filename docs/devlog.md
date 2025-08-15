@@ -93,3 +93,28 @@ See [`2025-08-14-refactor-datasource-abstract-classes.md`](2025-08-14-refactor-d
 - Se integró el componente `CustomInputRangeSlider` en la pantalla de onboarding para seleccionar el rango de edad preferido, conectado al store de onboarding (`minAgePreference` y `maxAgePreference`).
 - Se resolvió el error de gestos (`PanGestureHandler must be used as a descendant of GestureHandlerRootView`) envolviendo el root layout en `GestureHandlerRootView` en `app/_layout.tsx`.
 - Documentado el proceso y plan en [`2025-08-15-onboarding-age-range-slider.md`](./2025-08-15-onboarding-age-range-slider.md).
+
+## 2025-08-15 - Refactor: Centralización de logout en useGoogleAuth y eliminación de useLogout
+
+- Se refactorizó el flujo de logout para centralizar toda la lógica en el nuevo hook `useGoogleAuth` (`src/presentation/hooks/useGoogleAuth.ts`), eliminando el hook `useLogout`.
+- El nuevo método `logout` ahora:
+  - Limpia el store de usuario autenticado,
+  - Cierra sesión en Supabase,
+  - Cierra sesión en Google (`GoogleSignin`),
+  - Redirige automáticamente a la vista de login (`/login`).
+- Se actualizó la vista de swipe (`app/dashboard/swipe.tsx`) para usar el nuevo hook.
+- Se eliminó el archivo `useLogout.ts` ya que su funcionalidad fue absorbida por el nuevo hook.
+- Documentado el proceso y plan en [`2025-08-15-refactor-google-auth-logout.md`](./2025-08-15-refactor-google-auth-logout.md).
+
+## 2025-08-15 - Fix: React "key" warning in chat list
+
+- Se corrigió la advertencia de React "Each child in a list should have a unique 'key' prop" en la lista de chats (`app/dashboard/chats/index.tsx`).
+- Se robusteció el `keyExtractor` de `FlatList` para usar `chatId` si está presente y, si no, usar el índice como clave de respaldo, mostrando un warning en desarrollo.
+- Documentado el análisis y solución en [`2025-08-15-fix-chatlist-key-warning.md`](./2025-08-15-fix-chatlist-key-warning.md).
+
+## 2025-08-15 - Implementación de lógica de swipe limitado y cola circular en nearby-swipeable-profiles.store
+
+- Se implementó la lógica para limitar el número de swipes diarios por usuario y gestionar la cola circular de perfiles swipeables en el store [`nearby-swipeable-profiles.store.ts`](../src/presentation/stores/nearby-swipeable-profiles.store.ts).
+- Se crearon constantes globales para el máximo de swipes diarios y el tamaño del batch de perfiles.
+- El store ahora controla el contador de swipes en ventana de 24h, resetea automáticamente si corresponde, y gestiona la cola circular de perfiles.
+- Detalles y plan en [`2025-08-15-swipeable-profiles-store.md`](./2025-08-15-swipeable-profiles-store.md).
