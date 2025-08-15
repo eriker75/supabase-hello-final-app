@@ -26,43 +26,59 @@ export const useGoogleLogin = () => {
   const { logout } = useLogout();
 
   const signIn = async () => {
+    console.log("[GoogleLogin] signIn called");
     setIsLoading(true);
     setLoading(true);
     setError(null);
 
     try {
+      console.log("[GoogleLogin] Checking Play Services...");
       await GoogleSignin.hasPlayServices();
+      console.log("[GoogleLogin] Play Services available, calling GoogleSignin.signIn()");
       const response = await GoogleSignin.signIn();
+      console.log("[GoogleLogin] GoogleSignin.signIn() response:", response);
 
       if (!isSuccessResponse(response) || !response.data.idToken) {
+        console.log("[GoogleLogin] Invalid Google response or missing idToken", response);
         throw new Error("No se pudo obtener el token de Google");
       }
 
+      console.log("[GoogleLogin] Calling supabase.auth.signInWithIdToken with idToken:", response.data.idToken);
       const { data: authData, error: supabaseError } =
         await supabase.auth.signInWithIdToken({
           provider: "google",
           token: response.data.idToken,
         });
+      console.log("[GoogleLogin] Supabase signInWithIdToken result:", { authData, supabaseError });
 
       if (supabaseError || !authData.user) {
+        console.log("[GoogleLogin] Supabase error or missing user", supabaseError, authData);
         throw new Error(
           supabaseError?.message || "Error en la autenticación con Supabase"
         );
       }
 
+      console.log("[GoogleLogin] Fetching user from supabase.auth.getUser()");
       const {
         data: { user: userData },
       } = await supabase.auth.getUser();
+      console.log("[GoogleLogin] supabase.auth.getUser() result:", userData);
 
-      if (!userData) throw new Error("Usuario no encontrado");
+      if (!userData) {
+        console.log("[GoogleLogin] No userData found");
+        throw new Error("Usuario no encontrado");
+      }
 
+      console.log("[GoogleLogin] Fetching profile from Supabase...");
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", userData.id)
         .single();
+      console.log("[GoogleLogin] Profile fetch result:", { profileData, profileError });
 
       if (profileError) {
+        console.log("[GoogleLogin] Profile error", profileError);
         throw new Error("No se pudo obtener el perfil del usuario");
       }
 
@@ -99,11 +115,14 @@ export const useGoogleLogin = () => {
         refreshToken: authData.session?.refresh_token || "",
       };
 
+      console.log("[GoogleLogin] Setting user profile:", userProfile);
       setProfile(userProfile);
       setLoading(false);
       setIsLoading(false);
+      console.log("[GoogleLogin] Login flow completed successfully");
       return true;
     } catch (error) {
+      console.log("[GoogleLogin] Error in signIn:", error);
       setLoading(false);
       setIsLoading(false);
 

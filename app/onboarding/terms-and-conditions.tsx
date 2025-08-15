@@ -6,7 +6,8 @@ const TermsAndConditionsScreen = () => {
   return (
     <OnboardingScreenLayout
       showBackButton
-      footerButtonText="Continuar"
+      footerButtonText="Aceptar"
+      isStepValidated={true}
       onFooterButtonPress={() => router.back()}
     >
       <ScrollView
