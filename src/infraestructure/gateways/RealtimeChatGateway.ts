@@ -1,5 +1,5 @@
-import { subscribeTable } from "@/src/utils/suscriber";
 import { RealtimeChannel } from "@supabase/supabase-js";
+import { subscribeTable } from "../../utils/subscribeTable";
 import { RealtimeChatHandler } from "../handlers/RealtimeChatHandlers";
 
 /**

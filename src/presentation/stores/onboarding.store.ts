@@ -2,7 +2,7 @@ import { create, StateCreator } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import type { Location } from "../../definitions/ineterfaces/Location.interface";
-import { zustandAsyncStorage } from "../../utils/persister";
+import { zustandAsyncStorage } from "../../utils/zustandAsyncStorage";
 
 export interface OnboardingState {
   name: string;

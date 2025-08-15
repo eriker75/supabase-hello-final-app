@@ -1,7 +1,7 @@
 import { create, StateCreator } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
-import { zustandAsyncStorage } from "../../utils/persister";
+import { zustandAsyncStorage } from "../../utils/zustandAsyncStorage";
 
 export interface CurrentChatMessageState {
   messageId: string;
