@@ -33,7 +33,7 @@ export const step2Schema = z.object({
 
   bio: z
     .string()
-    .min(10, "La biografía debe tener al menos 100 caracteres")
+    .min(10, "La biografía debe tener al menos 10 caracteres")
     .max(250, "La biografía no puede exceder 500 caracteres"),
 
   gender: z.enum([GENDER_TYPES.MALE, GENDER_TYPES.FEMALE, GENDER_TYPES.OTHER], {

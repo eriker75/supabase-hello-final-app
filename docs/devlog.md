@@ -87,3 +87,9 @@ See [`2025-08-14-refactor-datasource-abstract-classes.md`](2025-08-14-refactor-d
 - Se eliminó la importación y uso de `dotenv` en `app/_layout.tsx` porque Expo/React Native no soporta módulos core de Node.js como `path`, requerido por `dotenv`.
 - No se detectó uso de variables de entorno en tiempo de ejecución en ese archivo, por lo que no fue necesario migrar lógica adicional.
 - Documentado el proceso y plan en [`2025-08-15-remove-dotenv-from-runtime.md`](./2025-08-15-remove-dotenv-from-runtime.md).
+
+## 2025-08-15 - Integración de slider de rango de edad en onboarding y fix de GestureHandler
+
+- Se integró el componente `CustomInputRangeSlider` en la pantalla de onboarding para seleccionar el rango de edad preferido, conectado al store de onboarding (`minAgePreference` y `maxAgePreference`).
+- Se resolvió el error de gestos (`PanGestureHandler must be used as a descendant of GestureHandlerRootView`) envolviendo el root layout en `GestureHandlerRootView` en `app/_layout.tsx`.
+- Documentado el proceso y plan en [`2025-08-15-onboarding-age-range-slider.md`](./2025-08-15-onboarding-age-range-slider.md).
