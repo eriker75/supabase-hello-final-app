@@ -42,46 +42,52 @@ interface UseNearbyUsersResult {
 
 function useNearbyUsers(userId: string): UseNearbyUsersResult {
   // Demo data: users in Bolivia
+  // Demo users: placed 15-50 km from the authenticated user (-19.03332, -65.26274)
   const demoUsers: NearbyUser[] = [
     {
       user_id: "1",
       username: "Juan Pérez",
       avatar_url: "https://randomuser.me/api/portraits/men/1.jpg",
-      latitude: -16.5, // La Paz
-      longitude: -68.15,
-      distance_km: 2.5,
+      // ~18 km NE
+      latitude: -18.87132,
+      longitude: -65.10074,
+      distance_km: 18.0,
     },
     {
       user_id: "2",
       username: "María Flores",
       avatar_url: "https://randomuser.me/api/portraits/women/2.jpg",
-      latitude: -17.3936, // Cochabamba
-      longitude: -66.157,
-      distance_km: 235.0,
+      // ~25 km NW
+      latitude: -18.80832,
+      longitude: -65.48274,
+      distance_km: 25.0,
     },
     {
       user_id: "3",
       username: "Carlos Quispe",
       avatar_url: "https://randomuser.me/api/portraits/men/3.jpg",
-      latitude: -17.7833, // Santa Cruz de la Sierra
-      longitude: -63.1833,
-      distance_km: 540.0,
+      // ~32 km SE
+      latitude: -19.32132,
+      longitude: -64.97274,
+      distance_km: 32.0,
     },
     {
       user_id: "4",
       username: "Ana Mamani",
       avatar_url: "https://randomuser.me/api/portraits/women/4.jpg",
-      latitude: -19.0333, // Sucre
-      longitude: -65.2627,
-      distance_km: 410.0,
+      // ~41 km SW
+      latitude: -19.40332,
+      longitude: -65.63274,
+      distance_km: 41.0,
     },
     {
       user_id: "5",
       username: "Luis Vargas",
       avatar_url: "https://randomuser.me/api/portraits/men/5.jpg",
-      latitude: -21.5333, // Tarija
-      longitude: -64.7333,
-      distance_km: 700.0,
+      // ~50 km E
+      latitude: -19.03332,
+      longitude: -64.81274,
+      distance_km: 50.0,
     },
   ];
 
@@ -123,6 +129,8 @@ const RadarScreen = () => {
     latitude: latitude ? parseFloat(latitude) : undefined,
     longitude: longitude ? parseFloat(longitude) : undefined,
   };
+
+  console.log(JSON.stringify(user,null,2));
 
   const router = useRouter();
 
