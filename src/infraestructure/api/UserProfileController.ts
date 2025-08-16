@@ -752,13 +752,63 @@ export class UserProfileController {
     maxDistance: number
   ): Promise<Match[]> {
     if (!userId) throw new Error("userId is required");
+    console.log("[listNearbyMatches] Calling supabase.rpc('nearby_matches', { max_distance: %s })", maxDistance);
     const { data, error } = await supabase.rpc("nearby_matches", {
-      user_id: userId,
       max_distance: maxDistance,
     });
-    if (error)
+    if (error) {
+      console.error("[listNearbyMatches] Error from supabase.rpc:", error);
       throw new Error("Error fetching nearby matches: " + error.message);
-    return (data || []) as Match[];
+    }
+    console.log("[listNearbyMatches] RPC data:", data);
+
+    // Enrich each match with full profile data
+    const matches: Match[] = [];
+    if (data && Array.isArray(data)) {
+      for (const basic of data) {
+        // Fetch full profile by user_id
+        const { data: fullArr, error: fullError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", basic.user_id)
+          .limit(1);
+        let merged;
+        if (fullError) {
+          console.warn("[listNearbyMatches] Error fetching full profile for userId:", basic.user_id, fullError);
+          merged = { ...basic, id: undefined };
+        } else if (fullArr && fullArr.length > 0) {
+          const full = fullArr[0];
+          merged = {
+            ...basic,
+            ...full,
+            id: full.id,
+            profileId: full.id,
+            userId: full.user_id,
+            alias: full.alias ?? basic.username ?? "",
+            name: full.name ?? basic.username ?? "",
+            biography: full.biography ?? "",
+            birthDay: full.birth_date ? new Date(full.birth_date).toISOString() : "",
+            age: full.birth_date ? Math.floor((Date.now() - new Date(full.birth_date).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null,
+            gender: full.gender ?? null,
+            avatar: full.avatar ?? basic.avatar_url ?? "",
+            address: full.address ?? "",
+            latitude: full.latitude !== undefined ? String(full.latitude) : basic.latitude ?? "",
+            longitude: full.longitude !== undefined ? String(full.longitude) : basic.longitude ?? "",
+            secondaryImages: Array.isArray(full.secondary_images) ? full.secondary_images : [],
+            isOnline: full.is_online ?? null,
+            isActive: full.is_active ?? null,
+            isOnboarded: full.is_onboarded ?? null,
+            lastOnline: full.last_online ? new Date(full.last_online).toISOString() : "",
+            // Add more fields as needed
+          };
+        } else {
+          merged = { ...basic, id: undefined };
+        }
+        matches.push(merged);
+      }
+    }
+    console.log("[listNearbyMatches] Final enriched matches:", matches);
+    return matches;
   }
 
   /**

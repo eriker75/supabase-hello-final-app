@@ -118,3 +118,11 @@ See [`2025-08-14-refactor-datasource-abstract-classes.md`](2025-08-14-refactor-d
 - Se crearon constantes globales para el máximo de swipes diarios y el tamaño del batch de perfiles.
 - El store ahora controla el contador de swipes en ventana de 24h, resetea automáticamente si corresponde, y gestiona la cola circular de perfiles.
 - Detalles y plan en [`2025-08-15-swipeable-profiles-store.md`](./2025-08-15-swipeable-profiles-store.md).
+
+## 2025-08-16 - Implementación de vista de testing de queries de la API
+
+- Se implementó una vista scrolleable en `app/queries.tsx` que permite probar manualmente los métodos principales de los controladores de la API (`ChatController`, `InteractionController`, `OnboardingController`, `UserProfileController`).
+- La vista utiliza componentes de UI y formularios existentes para mantener la coherencia visual y permite ingresar parámetros en formato JSON, ejecutar la query y ver el resultado o error.
+- Se documentó el plan y decisiones en [`2025-08-16-queries-testing-view.md`](./2025-08-16-queries-testing-view.md).
+- Se ajustó la lógica de redirección tras login en `app/index.tsx` para que, si el usuario está autenticado y onboarded, acceda a `/queries` (solo para testing temporal).
+- Esta vista es solo para pruebas manuales y no debe estar accesible en producción.

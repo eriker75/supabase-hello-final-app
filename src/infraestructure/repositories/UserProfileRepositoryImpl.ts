@@ -245,7 +245,7 @@ export function useListNearbySwipeableProfiles(
 export function useListNearbyMatches(
   userId: string,
   maxDistance: number
-): UseQueryResult<any[]> {
+): UseQueryResult<UserProfileEntity[]> {
   return useQuery({
     queryKey: ["userProfile", "listNearbyMatches", userId, maxDistance],
     queryFn: () => datasource.listNearbyMatches(userId, maxDistance),

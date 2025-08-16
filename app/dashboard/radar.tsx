@@ -1,11 +1,7 @@
 import gpsAnimation from "@/assets/animations/gps-signal.json";
 import { Spinner } from "@/components/ui";
+import { useListNearbyMatchesService } from "@/src/presentation/services/UserProfileService";
 import { useAuthUserProfileStore } from "@/src/presentation/stores/auth-user-profile.store";
-/**
- * TODO: The useNearbyUsers hook is missing from the codebase.
- * This is a placeholder implementation to prevent runtime errors.
- * Replace with the real implementation when available.
- */
 import { Redirect, useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
 import React, { useMemo, useState } from "react";
@@ -32,165 +28,6 @@ interface NearbyUser {
   latitude: number;
   longitude: number;
   distance_km: number;
-}
-
-interface UseNearbyUsersResult {
-  data: NearbyUser[];
-  isLoading: boolean;
-  isError: boolean;
-}
-
-function useNearbyUsers(userId: string): UseNearbyUsersResult {
-  // Demo data: users in Bolivia
-  // Demo users: 5 close, 5 mid, 5 far (up to MAX_DISTANCE_KM) from the authenticated user (-19.03332, -65.26274)
-  const demoUsers: NearbyUser[] = [
-    // --- Close users (1–5 km) ---
-    {
-      user_id: "c1",
-      username: "Cerca Uno",
-      avatar_url: "https://randomuser.me/api/portraits/men/11.jpg",
-      // ~1.2 km NE
-      latitude: -19.02252,
-      longitude: -65.25174,
-      distance_km: 1.2,
-    },
-    {
-      user_id: "c2",
-      username: "Cerca Dos",
-      avatar_url: "https://randomuser.me/api/portraits/women/12.jpg",
-      // ~2.8 km NW
-      latitude: -19.01832,
-      longitude: -65.28274,
-      distance_km: 2.8,
-    },
-    {
-      user_id: "c3",
-      username: "Cerca Tres",
-      avatar_url: "https://randomuser.me/api/portraits/men/13.jpg",
-      // ~3.5 km S
-      latitude: -19.06482,
-      longitude: -65.26274,
-      distance_km: 3.5,
-    },
-    {
-      user_id: "c4",
-      username: "Cerca Cuatro",
-      avatar_url: "https://randomuser.me/api/portraits/women/14.jpg",
-      // ~4.2 km E
-      latitude: -19.03332,
-      longitude: -65.22494,
-      distance_km: 4.2,
-    },
-    {
-      user_id: "c5",
-      username: "Cerca Cinco",
-      avatar_url: "https://randomuser.me/api/portraits/men/15.jpg",
-      // ~5.0 km SW
-      latitude: -19.07332,
-      longitude: -65.29274,
-      distance_km: 5.0,
-    },
-
-    // --- Mid-range users (18–50 km, as before) ---
-    {
-      user_id: "1",
-      username: "Juan Pérez",
-      avatar_url: "https://randomuser.me/api/portraits/men/1.jpg",
-      // ~18 km NE
-      latitude: -18.87132,
-      longitude: -65.10074,
-      distance_km: 18.0,
-    },
-    {
-      user_id: "2",
-      username: "María Flores",
-      avatar_url: "https://randomuser.me/api/portraits/women/2.jpg",
-      // ~25 km NW
-      latitude: -18.80832,
-      longitude: -65.48274,
-      distance_km: 25.0,
-    },
-    {
-      user_id: "3",
-      username: "Carlos Quispe",
-      avatar_url: "https://randomuser.me/api/portraits/men/3.jpg",
-      // ~32 km SE
-      latitude: -19.32132,
-      longitude: -64.97274,
-      distance_km: 32.0,
-    },
-    {
-      user_id: "4",
-      username: "Ana Mamani",
-      avatar_url: "https://randomuser.me/api/portraits/women/4.jpg",
-      // ~41 km SW
-      latitude: -19.40332,
-      longitude: -65.63274,
-      distance_km: 41.0,
-    },
-    {
-      user_id: "5",
-      username: "Luis Vargas",
-      avatar_url: "https://randomuser.me/api/portraits/men/5.jpg",
-      // ~50 km E
-      latitude: -19.03332,
-      longitude: -64.81274,
-      distance_km: 50.0,
-    },
-
-    // --- Far users (180–200 km) ---
-    {
-      user_id: "f1",
-      username: "Lejano Uno",
-      avatar_url: "https://randomuser.me/api/portraits/men/21.jpg",
-      // ~180 km N
-      latitude: -17.41532,
-      longitude: -65.26274,
-      distance_km: 180.0,
-    },
-    {
-      user_id: "f2",
-      username: "Lejano Dos",
-      avatar_url: "https://randomuser.me/api/portraits/women/22.jpg",
-      // ~185 km S
-      latitude: -20.70032,
-      longitude: -65.26274,
-      distance_km: 185.0,
-    },
-    {
-      user_id: "f3",
-      username: "Lejano Tres",
-      avatar_url: "https://randomuser.me/api/portraits/men/23.jpg",
-      // ~190 km E
-      latitude: -19.03332,
-      longitude: -63.54874,
-      distance_km: 190.0,
-    },
-    {
-      user_id: "f4",
-      username: "Lejano Cuatro",
-      avatar_url: "https://randomuser.me/api/portraits/women/24.jpg",
-      // ~195 km W
-      latitude: -19.03332,
-      longitude: -67.01874,
-      distance_km: 195.0,
-    },
-    {
-      user_id: "f5",
-      username: "Lejano Cinco",
-      avatar_url: "https://randomuser.me/api/portraits/men/25.jpg",
-      // ~200 km NE
-      latitude: -17.23332,
-      longitude: -63.46274,
-      distance_km: 200.0,
-    },
-  ];
-
-  return {
-    data: demoUsers,
-    isLoading: false,
-    isError: false,
-  };
 }
 
 const MAX_DISTANCE_KM = 200;
@@ -253,10 +90,38 @@ const RadarScreen = () => {
 
   // Always call the hook, but only enable it when user?.id is available
   const {
-    data: nearbyUsers = [],
+    data: matches = [],
     isLoading,
     isError,
-  } = useNearbyUsers(user?.id || "");
+    error,
+  } = useListNearbyMatchesService(user?.id || "", MAX_DISTANCE_KM);
+
+  if (isError) {
+    console.error("[RADAR] React Query error object:", error);
+  }
+
+  // Map UserProfileEntity[] to NearbyUser[]
+  const nearbyUsers: NearbyUser[] = (matches || [])
+    .filter(
+      (m: any) =>
+        m.userId &&
+        m.latitude !== null &&
+        m.longitude !== null &&
+        (m.avatar || m.avatar_url)
+    )
+    .map((m: any) => ({
+      ...m,
+      user_id: m.userId || m.user_id,
+      username: m.alias || m.username || "Usuario",
+      avatar_url: m.avatar || m.avatar_url || "",
+      latitude:
+        typeof m.latitude === "string" ? parseFloat(m.latitude) : m.latitude,
+      longitude:
+        typeof m.longitude === "string" ? parseFloat(m.longitude) : m.longitude,
+      distance_km: m.distance_km ?? 0,
+    }));
+
+  console.log(JSON.stringify(nearbyUsers, null, 2));
 
   const panResponder = useMemo(
     () =>
@@ -297,10 +162,32 @@ const RadarScreen = () => {
     );
   }
 
+  if (isError) {
+    console.error("[RADAR] Error state triggered. Error:", {
+      isError,
+      matches,
+      user,
+      latitude: user?.latitude,
+      longitude: user?.longitude,
+      error,
+    });
+  }
+  if (!user?.latitude || !user?.longitude) {
+    console.error("[RADAR] User latitude or longitude is missing:", user);
+  }
   if (isError || !user?.latitude || !user?.longitude) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <Text>Error al cargar usuarios cercanos o tu ubicación.</Text>
+        <Text>
+          Error al cargar usuarios cercanos o tu ubicación.
+          {"\n"}
+          {isError ? "isError: true" : ""}
+          {!user?.latitude ? "\nlatitude missing" : ""}
+          {!user?.longitude ? "\nlongitude missing" : ""}
+          {error ? "\nerror: " + JSON.stringify(error, null, 2) : ""}
+          {"\n"}user: {JSON.stringify(user, null, 2)}
+          {"\n"}matches: {JSON.stringify(matches, null, 2)}
+        </Text>
       </SafeAreaView>
     );
   }

@@ -187,8 +187,15 @@ export class UserProfileDatasourceImpl
   }
 
   /** List nearby matches (geo) */
-  async listNearbyMatches(userId: string, maxDistance: number): Promise<any[]> {
-    return await this.controller.listNearbyMatches(userId, maxDistance);
+  async listNearbyMatches(userId: string, maxDistance: number): Promise<UserProfileEntity[]> {
+    const matches = await this.controller.listNearbyMatches(userId, maxDistance);
+    return (matches || []).map((row: any) =>
+      toDomainUserProfile({
+        id: row.id || row.user_id,
+        profile: row,
+        preferences: null,
+      })
+    );
   }
 
   /** Update my location (geo) */
