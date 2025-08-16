@@ -72,6 +72,8 @@ export function toNearbySwipeableProfile(entity: UserProfileEntity): NearbySwipe
   return {
     userId: entity.userId,
     profileId: entity.id,
+    // Ensure profileId is always set in the entity for store/profile screen compatibility
+    ...(entity as any).profileId === undefined && entity.id ? { profileId: entity.id } : {},
     biography: entity.biography ?? "",
     birthDay: entity.birthDate ? entity.birthDate.toISOString() : "",
     distanceInKm: "", // If available, map here
@@ -90,9 +92,9 @@ export function toNearbySwipeableProfile(entity: UserProfileEntity): NearbySwipe
     name: entity.name ?? "",
     avatar: entity.avatar ?? "",
     address: entity.address ?? "",
-    latitude: entity.latitude?.toString() ?? "",
-    longitude: entity.longitude?.toString() ?? "",
-    secondaryImages: entity.secondaryImages ?? [],
+    latitude: entity.latitude !== undefined ? String(entity.latitude) : "",
+    longitude: entity.longitude !== undefined ? String(entity.longitude) : "",
+    secondaryImages: Array.isArray(entity.secondaryImages) ? entity.secondaryImages : [],
     isOnline: false,
     isActive: entity.isActive ?? false,
     isOnboarded: entity.isOnboarded ?? false,

@@ -75,6 +75,7 @@ export default function UserProfileByIdScreen() {
   }
 
   if (error || !userProfile || !userProfile.profileId) {
+    console.log(error, userProfile, userProfile.profileId);
     return (
       <View style={styles.centered}>
         <Text>Error al cargar el perfil.</Text>

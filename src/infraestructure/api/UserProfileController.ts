@@ -689,13 +689,59 @@ export class UserProfileController {
   ): Promise<Profile[]> {
     if (!userId) throw new Error("userId is required");
     const { data, error } = await supabase.rpc("swipeable_profiles", {
-      user_id: userId,
       max_distance: maxDistance,
       limit_count: limit,
     });
     if (error)
       throw new Error("Error fetching swipeable profiles: " + error.message);
-    return (data || []) as Profile[];
+
+    // Complement each profile with full info from profiles table
+    const profiles: Profile[] = [];
+    if (data && Array.isArray(data)) {
+      for (const basic of data) {
+        // Fetch full profile by user_id
+        const { data: fullArr, error: fullError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", basic.userId || basic.user_id)
+          .limit(1);
+        let merged;
+        if (fullError) {
+          console.warn("[listNearbySwipeableProfiles] Error fetching full profile for userId:", basic.userId, fullError);
+          merged = { ...basic, id: undefined };
+        } else if (fullArr && fullArr.length > 0) {
+          const full = fullArr[0];
+          merged = {
+            ...basic,
+            ...full,
+            id: full.id,
+            profileId: full.id,
+            userId: full.user_id,
+            alias: full.alias ?? basic.alias ?? "",
+            name: full.name ?? basic.name ?? "",
+            biography: full.biography ?? basic.biography ?? "",
+            birthDay: full.birth_date ? new Date(full.birth_date).toISOString() : basic.birthDay ?? "",
+            age: full.birth_date ? Math.floor((Date.now() - new Date(full.birth_date).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : basic.age ?? 0,
+            gender: full.gender ?? basic.gender ?? 0,
+            avatar: full.avatar ?? basic.avatar ?? "",
+            address: full.address ?? basic.address ?? "",
+            latitude: full.latitude !== undefined ? String(full.latitude) : basic.latitude ?? "",
+            longitude: full.longitude !== undefined ? String(full.longitude) : basic.longitude ?? "",
+            secondaryImages: Array.isArray(full.secondary_images) ? full.secondary_images : (basic.secondaryImages ?? []),
+            isOnline: full.is_online ?? basic.isOnline ?? false,
+            isActive: full.is_active ?? basic.isActive ?? false,
+            isOnboarded: full.is_onboarded ?? basic.isOnboarded ?? false,
+            lastOnline: full.last_online ? new Date(full.last_online).toISOString() : basic.lastOnline ?? "",
+            // Add more fields as needed
+          };
+        } else {
+          merged = { ...basic, id: undefined };
+        }
+        console.log("[listNearbySwipeableProfiles] merged profile:", merged);
+        profiles.push(merged);
+      }
+    }
+    return profiles;
   }
 
   /**

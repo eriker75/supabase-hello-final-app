@@ -117,10 +117,23 @@ export function useDeleteUserProfileService() {
 }
 
 /** Get user profile by id and sync to store */
+import { useEffect } from "react";
 export function useGetUserProfileByIdService(id: string) {
   const setProfile = useSetCurrentUserProfile();
   const query = useFindUserProfileById(id);
-  if (query.data) setProfile(query.data);
+  console.log("[useGetUserProfileByIdService] Fetching profile by id:", id, "query:", query);
+  useEffect(() => {
+    console.log("[useGetUserProfileByIdService] useEffect query.data:", query.data, "error:", query.error);
+    if (query.data) {
+      // Ensure profileId is set for store compatibility
+      const profileWithProfileId = {
+        ...(query.data as any),
+        profileId: (query.data as any).profileId || query.data.id || "",
+      };
+      setProfile(profileWithProfileId);
+      console.log("[useGetUserProfileByIdService] setProfile called with:", profileWithProfileId);
+    }
+  }, [query.data, setProfile]);
   return query;
 }
 

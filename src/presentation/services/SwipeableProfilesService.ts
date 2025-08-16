@@ -37,12 +37,28 @@ export function useFetchSwipeableProfiles(userId: string, maxDistance: number) {
     (s) => s.loadInitialProfiles
   );
 
+  // Debug: log request params and response
+  console.log("[useFetchSwipeableProfiles] userId:", userId, "maxDistance:", maxDistance, "data:", data, "error:", error);
+
   useCallback(() => {
     if (data) {
       const mapped = (data as UserProfileEntity[]).map(
         toNearbySwipeableProfile
       );
-      loadInitialProfiles(mapped);
+      console.log("[useFetchSwipeableProfiles] mapped profiles:", mapped);
+
+      // Only update the store if the profiles have changed
+      const current = nearbySwipeableProfilesStore.getState().nearbySwipeableProfiles;
+      const same =
+        current.length === mapped.length &&
+        current.every((p, i) => p.profileId === mapped[i].profileId);
+
+      if (!same) {
+        console.log("[useFetchSwipeableProfiles] Updating store with new profiles");
+        loadInitialProfiles(mapped);
+      } else {
+        console.log("[useFetchSwipeableProfiles] Skipping store update (no change)");
+      }
     }
   }, [data, loadInitialProfiles])();
 

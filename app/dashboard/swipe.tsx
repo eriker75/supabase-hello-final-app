@@ -1,4 +1,11 @@
 import { Avatar, AvatarImage, Text } from "@/components/ui";
+import {
+  useCanSwipe,
+  useFetchSwipeableProfiles,
+  useSwipeableProfilesState,
+  useSwipeProfile,
+} from "@/src/presentation/services/SwipeableProfilesService";
+import { useAuthUserProfileStore } from "@/src/presentation/stores/auth-user-profile.store";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Key, useRef, useState } from "react";
@@ -19,7 +26,7 @@ import Reanimated, {
   useAnimatedProps,
   useAnimatedStyle,
   useSharedValue,
-  withTiming
+  withTiming,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -66,43 +73,61 @@ const ReanimatedIcon = ({
   );
 };
 
-import {
-  useCanSwipe,
-  useFetchSwipeableProfiles,
-  useSwipeableProfilesState,
-  useSwipeProfile,
-} from "@/src/presentation/services/SwipeableProfilesService";
-
-// TODO: Reemplazar por el userId real y maxDistance real del usuario autenticado
-const userId = "demo-user-id";
-const maxDistance = 200;
-
 const SwipeScreen = () => {
+  // Obtener usuario autenticado y preferencias
+  const { userId, maxDistancePreference } = useAuthUserProfileStore();
   // Estado y hooks del servicio real
-  useFetchSwipeableProfiles(userId, maxDistance);
+  console.log(
+    "[SwipeScreen] userId:",
+    userId,
+    "maxDistancePreference:",
+    maxDistancePreference
+  );
+  useFetchSwipeableProfiles(userId, maxDistancePreference);
   const { nearbySwipeableProfiles, hasMore } = useSwipeableProfilesState();
   const { swipe, isLoading: isSwiping } = useSwipeProfile(userId);
   const canSwipe = useCanSwipe();
+
+  console.log(JSON.stringify(nearbySwipeableProfiles, null, 2));
 
   // Reanimated values for Like/Pass button animation
   const likeAnim = useSharedValue(0);
   const passAnim = useSharedValue(0);
 
+  const [profileIndex, setProfileIndex] = useState(0);
   const [photoIndex, setPhotoIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
   const router = useRouter();
 
-  // Perfil actual (primero de la cola)
+  // Perfil actual (por índice local)
+  console.log(
+    "[SwipeScreen] nearbySwipeableProfiles:",
+    nearbySwipeableProfiles
+  );
   const currentProfile =
-    nearbySwipeableProfiles && nearbySwipeableProfiles.length > 0
-      ? nearbySwipeableProfiles[0]
+    nearbySwipeableProfiles &&
+    nearbySwipeableProfiles.length > 0 &&
+    profileIndex < nearbySwipeableProfiles.length
+      ? nearbySwipeableProfiles[profileIndex]
       : undefined;
+  console.log(
+    "[SwipeScreen] profileIndex:",
+    profileIndex,
+    "currentProfile:",
+    currentProfile,
+    "profilesLen:",
+    nearbySwipeableProfiles.length
+  );
 
-  // Imágenes del perfil actual
-  const images =
-    currentProfile && Array.isArray(currentProfile.secondaryImages) && currentProfile.secondaryImages.length > 0
-      ? currentProfile.secondaryImages
-      : [currentProfile?.avatar].filter(Boolean);
+  // Carousel: avatar (primero, centrado) + hasta 4 secondaryImages (máx 5 imágenes)
+  const images = currentProfile
+    ? [
+        currentProfile.avatar,
+        ...(Array.isArray(currentProfile.secondaryImages)
+          ? currentProfile.secondaryImages.slice(0, 4)
+          : []),
+      ].filter(Boolean)
+    : [];
 
   // Handle scroll events to update photo index
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -113,11 +138,26 @@ const SwipeScreen = () => {
 
   // Animaciones para like/pass
   const triggerLike = () => {
-    if (!canSwipe || isSwiping) return;
+    console.log(
+      "[triggerLike] Button pressed. canSwipe:",
+      canSwipe,
+      "isSwiping:",
+      isSwiping,
+      "currentProfile:",
+      currentProfile
+    );
+    if (!canSwipe || isSwiping) {
+      console.log("[triggerLike] Blocked: canSwipe or isSwiping is false");
+      return;
+    }
+    console.log("[triggerLike] Animation starting");
     likeAnim.value = withTiming(1, { duration: 150 }, (finished) => {
       if (finished) {
         likeAnim.value = withTiming(0, { duration: 150 }, (finished2) => {
           if (finished2) {
+            console.log(
+              "[triggerLike] Animation finished, calling handleSwipe(true)"
+            );
             runOnJS(() => handleSwipe(true))();
           }
         });
@@ -126,11 +166,26 @@ const SwipeScreen = () => {
   };
 
   const triggerPass = () => {
-    if (!canSwipe || isSwiping) return;
+    console.log(
+      "[triggerPass] Button pressed. canSwipe:",
+      canSwipe,
+      "isSwiping:",
+      isSwiping,
+      "currentProfile:",
+      currentProfile
+    );
+    if (!canSwipe || isSwiping) {
+      console.log("[triggerPass] Blocked: canSwipe or isSwiping is false");
+      return;
+    }
+    console.log("[triggerPass] Animation starting");
     passAnim.value = withTiming(1, { duration: 150 }, (finished) => {
       if (finished) {
         passAnim.value = withTiming(0, { duration: 150 }, (finished2) => {
           if (finished2) {
+            console.log(
+              "[triggerPass] Animation finished, calling handleSwipe(false)"
+            );
             runOnJS(() => handleSwipe(false))();
           }
         });
@@ -140,11 +195,64 @@ const SwipeScreen = () => {
 
   // Swipe real: like/pass y avanza la cola
   const handleSwipe = async (isLiked: boolean) => {
-    if (!currentProfile) return;
-    await swipe(currentProfile.userId, isLiked, null); // null: el backend debe cargar el siguiente
-    setPhotoIndex(0);
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ x: 0, animated: false });
+    try {
+      if (!currentProfile) {
+        console.log("[handleSwipe] No currentProfile, aborting.");
+        return;
+      }
+      console.log(
+        "[handleSwipe] Swiping profile:",
+        currentProfile,
+        "isLiked:",
+        isLiked
+      );
+      let swipeResult;
+      try {
+        console.log("[handleSwipe] Calling swipe mutation...");
+        swipeResult = await swipe(currentProfile.userId, isLiked, null); // null: el backend debe cargar el siguiente
+        console.log("[handleSwipe] swipeResult:", swipeResult);
+      } catch (err) {
+        // Mostrar error pero avanzar la cola localmente
+        console.error("[handleSwipe] Error en swipe mutation:", err);
+      }
+      // Avanzar el índice localmente
+      console.log(
+        "[handleSwipe] Before setProfileIndex, current:",
+        profileIndex,
+        "profilesLen:",
+        nearbySwipeableProfiles.length
+      );
+      setTimeout(() => {
+        setProfileIndex((prev) => {
+          const nextIndex = prev + 1;
+          console.log(
+            "[handleSwipe] Advancing to next profileIndex:",
+            nextIndex,
+            "profilesLen:",
+            nearbySwipeableProfiles.length
+          );
+          return nextIndex;
+        });
+      }, 0);
+      setPhotoIndex(0);
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({ x: 0, animated: false });
+      }
+      // Si se llegó al final del batch, mostrar mensaje o recargar
+      if (profileIndex + 1 >= nearbySwipeableProfiles.length) {
+        console.warn(
+          "[handleSwipe] No hay más perfiles en el batch. Considera recargar o pedir más."
+        );
+        // Aquí podrías disparar un refetch o mostrar un mensaje al usuario
+      }
+      // Feedback si se alcanzó el límite
+      if (swipeResult && swipeResult.reachedDailyLimit) {
+        // Puedes mostrar un toast, modal o alerta aquí
+        console.warn("[handleSwipe] Has alcanzado el límite diario de swipes.");
+      }
+      console.log("[handleSwipe] End of function");
+    } catch (err) {
+      console.error("[handleSwipe] Unhandled error:", err);
     }
   };
 
@@ -164,7 +272,7 @@ const SwipeScreen = () => {
     <SafeAreaView className="flex-1 bg-black">
       <View className="absolute inset-0 z-[1]">
         {/* Image ScrollView - Main scrollable content */}
-        {images.length > 0 ? (
+        {currentProfile && images.length > 0 ? (
           <ScrollView
             ref={scrollViewRef}
             horizontal
@@ -175,18 +283,29 @@ const SwipeScreen = () => {
             className="absolute inset-0 z-[1]"
             contentContainerStyle={{}}
           >
-            {images.map((imgSrc: any, index: number) => (
-              <View key={index} className="relative" style={{ width, height }}>
-                <Image
-                  source={imgSrc}
+            {images.map((imgSrc: any, index: number) => {
+              const imgSource =
+                typeof imgSrc === "string" && imgSrc
+                  ? { uri: imgSrc }
+                  : require("@/assets/images/avatar-placeholder.png");
+              console.log("[Image Render] imgSrc:", imgSrc, "used:", imgSource);
+              return (
+                <View
+                  key={index}
+                  className="relative"
                   style={{ width, height }}
-                  className=""
-                  resizeMode="cover"
-                />
-                {/* Overlay per image */}
-                <View style={gradientOverlayStyle} pointerEvents="none" />
-              </View>
-            ))}
+                >
+                  <Image
+                    source={imgSource}
+                    style={{ width, height }}
+                    className=""
+                    resizeMode="cover"
+                  />
+                  {/* Overlay per image */}
+                  <View style={gradientOverlayStyle} pointerEvents="none" />
+                </View>
+              );
+            })}
           </ScrollView>
         ) : (
           <View className="relative" style={{ width, height }}>
@@ -215,7 +334,13 @@ const SwipeScreen = () => {
             className="w-[38px] h-[38px] rounded-full overflow-hidden border-2 border-white items-center justify-center"
           >
             <Avatar size="sm" className="w-full h-full">
-              <AvatarImage source={{ uri: "" }} />
+              <AvatarImage
+                source={
+                  userId && useAuthUserProfileStore.getState().avatar
+                    ? { uri: useAuthUserProfileStore.getState().avatar }
+                    : require("@/assets/images/avatar-placeholder.png")
+                }
+              />
             </Avatar>
           </Pressable>
         </View>
@@ -313,9 +438,10 @@ const SwipeScreen = () => {
           ]}
         >
           <Pressable
-            onPress={triggerPass}
+            onPress={currentProfile && !isSwiping ? triggerPass : undefined}
             className="w-16 h-16 items-center justify-center"
             accessibilityLabel="Pasar"
+            disabled={!currentProfile || isSwiping}
           >
             <ReanimatedIcon
               name="close"
@@ -373,9 +499,10 @@ const SwipeScreen = () => {
           ]}
         >
           <Pressable
-            onPress={triggerLike}
+            onPress={currentProfile && !isSwiping ? triggerLike : undefined}
             className="w-16 h-16 items-center justify-center"
             accessibilityLabel="Me gusta"
+            disabled={!currentProfile || isSwiping}
           >
             <ReanimatedIcon
               name="favorite"
