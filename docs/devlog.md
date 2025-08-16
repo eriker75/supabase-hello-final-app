@@ -126,3 +126,10 @@ See [`2025-08-14-refactor-datasource-abstract-classes.md`](2025-08-14-refactor-d
 - Se documentó el plan y decisiones en [`2025-08-16-queries-testing-view.md`](./2025-08-16-queries-testing-view.md).
 - Se ajustó la lógica de redirección tras login en `app/index.tsx` para que, si el usuario está autenticado y onboarded, acceda a `/queries` (solo para testing temporal).
 - Esta vista es solo para pruebas manuales y no debe estar accesible en producción.
+## 2025-08-16 - Implementación de vista de edición de perfil
+
+- Se creó la vista `/edit` con un formulario de edición de perfil, reutilizando los componentes y lógica de onboarding.
+- El formulario carga los datos del usuario desde el store y permite actualizar el perfil usando el servicio `UserProfileService`.
+- Se implementó el layout `app/edit/_layout.tsx` para la navegación.
+- Se actualizó el botón "Editar" en `app/dashboard/profile/index.tsx` para navegar correctamente a la vista de edición.
+- Se documentó el plan y los archivos modificados en `docs/2025-08-16-edit-profile-view.md`.

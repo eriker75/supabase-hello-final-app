@@ -28,9 +28,13 @@ function getExcerpt(text: string, maxLength: number = 140): string {
   return (lastSpace > 0 ? trimmed.slice(0, lastSpace) : trimmed).trim() + "…";
 }
 
+import { useRouter } from "expo-router";
+
 export default function ProfileScreen() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+
+  const router = useRouter();
 
   // Get auth user profile from store for fast initial render
   const userProfile = useAuthUserProfileStore();
@@ -169,7 +173,7 @@ export default function ProfileScreen() {
               {userProfile.alias || userProfile.name || "Usuario"}
               {userProfile.age ? `, ${userProfile.age}` : ""}
             </Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push("/edit" as any)}>
               <Text style={styles.editText}>Editar</Text>
             </TouchableOpacity>
           </View>

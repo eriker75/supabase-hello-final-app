@@ -19,8 +19,8 @@ export default function Index() {
 
   if (isAuthenticated) {
     if (isOnboarded) {
-      // return <Redirect href="/dashboard/radar" />;
-      return <Redirect href="/queries" />;
+      return <Redirect href="/dashboard/radar" />;
+      // return <Redirect href="/queries" />;
     } else {
       return <Redirect href="/onboarding" />;
     }
