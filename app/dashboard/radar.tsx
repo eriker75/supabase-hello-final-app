@@ -42,8 +42,56 @@ interface UseNearbyUsersResult {
 
 function useNearbyUsers(userId: string): UseNearbyUsersResult {
   // Demo data: users in Bolivia
-  // Demo users: placed 15-50 km from the authenticated user (-19.03332, -65.26274)
+  // Demo users: 5 close, 5 mid, 5 far (up to MAX_DISTANCE_KM) from the authenticated user (-19.03332, -65.26274)
   const demoUsers: NearbyUser[] = [
+    // --- Close users (1–5 km) ---
+    {
+      user_id: "c1",
+      username: "Cerca Uno",
+      avatar_url: "https://randomuser.me/api/portraits/men/11.jpg",
+      // ~1.2 km NE
+      latitude: -19.02252,
+      longitude: -65.25174,
+      distance_km: 1.2,
+    },
+    {
+      user_id: "c2",
+      username: "Cerca Dos",
+      avatar_url: "https://randomuser.me/api/portraits/women/12.jpg",
+      // ~2.8 km NW
+      latitude: -19.01832,
+      longitude: -65.28274,
+      distance_km: 2.8,
+    },
+    {
+      user_id: "c3",
+      username: "Cerca Tres",
+      avatar_url: "https://randomuser.me/api/portraits/men/13.jpg",
+      // ~3.5 km S
+      latitude: -19.06482,
+      longitude: -65.26274,
+      distance_km: 3.5,
+    },
+    {
+      user_id: "c4",
+      username: "Cerca Cuatro",
+      avatar_url: "https://randomuser.me/api/portraits/women/14.jpg",
+      // ~4.2 km E
+      latitude: -19.03332,
+      longitude: -65.22494,
+      distance_km: 4.2,
+    },
+    {
+      user_id: "c5",
+      username: "Cerca Cinco",
+      avatar_url: "https://randomuser.me/api/portraits/men/15.jpg",
+      // ~5.0 km SW
+      latitude: -19.07332,
+      longitude: -65.29274,
+      distance_km: 5.0,
+    },
+
+    // --- Mid-range users (18–50 km, as before) ---
     {
       user_id: "1",
       username: "Juan Pérez",
@@ -89,6 +137,53 @@ function useNearbyUsers(userId: string): UseNearbyUsersResult {
       longitude: -64.81274,
       distance_km: 50.0,
     },
+
+    // --- Far users (180–200 km) ---
+    {
+      user_id: "f1",
+      username: "Lejano Uno",
+      avatar_url: "https://randomuser.me/api/portraits/men/21.jpg",
+      // ~180 km N
+      latitude: -17.41532,
+      longitude: -65.26274,
+      distance_km: 180.0,
+    },
+    {
+      user_id: "f2",
+      username: "Lejano Dos",
+      avatar_url: "https://randomuser.me/api/portraits/women/22.jpg",
+      // ~185 km S
+      latitude: -20.70032,
+      longitude: -65.26274,
+      distance_km: 185.0,
+    },
+    {
+      user_id: "f3",
+      username: "Lejano Tres",
+      avatar_url: "https://randomuser.me/api/portraits/men/23.jpg",
+      // ~190 km E
+      latitude: -19.03332,
+      longitude: -63.54874,
+      distance_km: 190.0,
+    },
+    {
+      user_id: "f4",
+      username: "Lejano Cuatro",
+      avatar_url: "https://randomuser.me/api/portraits/women/24.jpg",
+      // ~195 km W
+      latitude: -19.03332,
+      longitude: -67.01874,
+      distance_km: 195.0,
+    },
+    {
+      user_id: "f5",
+      username: "Lejano Cinco",
+      avatar_url: "https://randomuser.me/api/portraits/men/25.jpg",
+      // ~200 km NE
+      latitude: -17.23332,
+      longitude: -63.46274,
+      distance_km: 200.0,
+    },
   ];
 
   return {
@@ -100,12 +195,27 @@ function useNearbyUsers(userId: string): UseNearbyUsersResult {
 
 const MAX_DISTANCE_KM = 200;
 
+// Distancia mínima visual (en píxeles) desde el centro para mostrar avatares
+const MIN_RADAR_RADIUS = 60; // px
+
+// Distancia mínima real (en km) para mostrar un avatar (evita solapamiento exacto)
+const MIN_REAL_DISTANCE_KM = 0.01;
+
+// Mapeo no lineal de distancia real a radio en el radar
+function mapDistanceToRadarRadius(distance: number, maxRadius: number) {
+  // Si la distancia es menor al mínimo, colócala justo en el borde mínimo
+  if (distance < MIN_REAL_DISTANCE_KM) return MIN_RADAR_RADIUS;
+  // Usar raíz cuadrada para expandir visualmente distancias pequeñas
+  const normalized = Math.sqrt(distance / MAX_DISTANCE_KM);
+  return MIN_RADAR_RADIUS + normalized * (maxRadius - MIN_RADAR_RADIUS);
+}
+
 // Función para calcular opacidad basada en distancia
 const getOpacityByDistance = (distance: number) => {
-  if (distance > 170) {
-    return 0.35; // Muy lejos (150-200km)
-  } else if (distance > 120) {
-    return 0.7; // Lejos (100-150km)
+  if (distance > MAX_DISTANCE_KM * 0.85) {
+    return 0.35; // Muy lejos
+  } else if (distance > MAX_DISTANCE_KM * 0.6) {
+    return 0.7; // Lejos
   } else {
     return 1; // Cerca (0-100km)
   }
@@ -130,7 +240,7 @@ const RadarScreen = () => {
     longitude: longitude ? parseFloat(longitude) : undefined,
   };
 
-  console.log(JSON.stringify(user,null,2));
+  console.log(JSON.stringify(user, null, 2));
 
   const router = useRouter();
 
@@ -325,12 +435,18 @@ const RadarScreen = () => {
 
           const distance = Math.sqrt(dx * dx + dy * dy);
           if (distance > MAX_DISTANCE_KM) return null;
+          if (distance < MIN_REAL_DISTANCE_KM) return null; // No mostrar si está demasiado cerca
 
           // Calcular opacidad basada en distancia
           const opacity = getOpacityByDistance(distance);
 
-          const x = center.x + dx * (maxRadius / MAX_DISTANCE_KM) * scale;
-          const y = center.y + dy * (maxRadius / MAX_DISTANCE_KM) * scale;
+          // Nuevo: mapeo no lineal de distancia a radio
+          const radarRadius = mapDistanceToRadarRadius(distance, maxRadius);
+
+          // Normalizar dirección
+          const angle = Math.atan2(dy, dx);
+          const x = center.x + radarRadius * Math.cos(angle) * scale;
+          const y = center.y + radarRadius * Math.sin(angle) * scale;
 
           const isSelected = selectedUserId === u.user_id;
 
@@ -352,7 +468,7 @@ const RadarScreen = () => {
                   {
                     borderColor: isSelected ? "#FFD700" : "#fff",
                     borderWidth: isSelected ? 3 : 2,
-                    opacity,
+                    opacity: isSelected ? 1 : opacity,
                     ...(isSelected && {
                       shadowColor: "#FFD700",
                       shadowOffset: { width: 0, height: 0 },
